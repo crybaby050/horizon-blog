@@ -3,7 +3,15 @@ require_once ROOT."/model/lecteur/lecteurModel.php";
 
 $home = function(){
     $articles = getArticleVisuel();
-    loadView("lecteur/home");
+
+    // Pour chaque article, on récupère ses catégories séparément
+    foreach($articles as &$article){
+        $article['categories'] = getCategoriesByArticle($article['id']);
+    }
+    unset($article); // bonne pratique après un foreach par référence
+
+    $categories = getPrincipalCategorie();
+    loadView("lecteur/home", compact('articles', 'categories'));
 };
 
 $actions=[

@@ -1,11 +1,15 @@
 <?php
 require_once ROOT."/model/lecteur/lecteurModel.php";
 
+$home = function(){
+    loadView("lecteur/home");
+};
+
 $actions=[
     "home"=>$home,
-    "categorie"=>$categorie,
-    "article"=>$article,
-    "contact"=>$contact
+    //"categorie"=>$categorie,
+    //"article"=>$article,
+    //"contact"=>$contact
 ];
 $action=$_REQUEST["action"]??"home";
 

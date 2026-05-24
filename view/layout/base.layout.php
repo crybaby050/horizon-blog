@@ -761,8 +761,8 @@
     </a>
 
     <div class="nav-menu">
-      <a href="#" class="active">Acceuil</a>
-      <a href="#">Article</a>
+      <a href="<?=path("lecteur","home")?>" class="active">Acceuil</a>
+      <a href="<?=path("lecteur","article")?>">Article</a>
       <a href="#">Catégorie</a>
       <a href="#">Contact</a>
     </div>

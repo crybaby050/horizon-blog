@@ -16,7 +16,7 @@ function getArticleVisuel(){
     LIMIT 5";
     return executeSelect($sql);
 }
- 
+
 function getCategoriesByArticle($article_id){
     $sql = "SELECT c.libelle 
     FROM categorie c
@@ -24,7 +24,7 @@ function getCategoriesByArticle($article_id){
     WHERE ac.article_id = $article_id";
     return executeSelect($sql);
 }
- 
+
 function getPrincipalCategorie(){
     $sql = "SELECT * FROM categorie LIMIT 4";
     return executeSelect($sql);

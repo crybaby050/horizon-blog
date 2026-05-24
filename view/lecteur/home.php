@@ -42,7 +42,7 @@
         </svg>
       </div>
 
-      <img class="avatar-img" src="https://i.pravatar.cc/80?img=33" alt="auteur"/>
+      <img class="avatar-img" src="https://fr.freepik.com/photos-vecteurs-libre/orque" alt="auteur"/>
 
       <div class="meta-label">Auteur</div>
       <div class="meta-val" id="cardAuteur">
@@ -150,7 +150,7 @@
     <div class="categ-grid fade-up">
       <!-- Sport -->
       <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1541252260730-0412e8e2108e?w=900&q=80" alt="Sport"/>
+        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&q=80" alt="Sport"/>
         <div class="categ-overlay"></div>
         <div class="categ-badge" style="background:#7c3aed;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -178,7 +178,7 @@
 
       <!-- Animals -->
       <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1567431045634-a4a06f0bad52?w=900&q=80" alt="Animals"/>
+        <img src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=900&q=80" alt="Animals"/>
         <div class="categ-overlay"></div>
         <div class="categ-badge" style="background:#22c55e;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>

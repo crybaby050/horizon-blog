@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT."config/config.php";
+
 /**
  * Exécute une requête SELECT et retourne les résultats
  *

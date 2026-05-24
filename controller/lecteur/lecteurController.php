@@ -1,5 +1,5 @@
 <?php
-require_once ROOT."/model/lecteurModel.php";
+require_once ROOT."/model/lecteur/lecteurModel.php";
 
 $actions=[
     "home"=>$home,

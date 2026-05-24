@@ -1,12 +1,12 @@
 <?php
 $controllers=[
-    "visiteur"=>"visiteur",
+    "lecteur"=>"lecteur",
     "auteur"=>"auteur",
     "admin"=>"admin"
 
 ];
 
-$controller=$_REQUEST["controller"]??"visiteur";
+$controller=$_REQUEST["controller"]??"lecteur";
 
 if (array_key_exists($controller, $controllers)) {
     $path=ROOT."controller/".$controllers[$controller]."Controller.php";

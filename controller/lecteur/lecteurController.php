@@ -14,10 +14,14 @@ $home = function(){
     loadView("lecteur/home", compact('articles', 'categories'));
 };
 
+$article = function(){
+    loadView("lecteur/article");
+};
+
 $actions=[
     "home"=>$home,
     //"categorie"=>$categorie,
-    //"article"=>$article,
+    "article"=>$article,
     //"contact"=>$contact
 ];
 $action=$_REQUEST["action"]??"home";

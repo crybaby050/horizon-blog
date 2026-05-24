@@ -129,7 +129,7 @@
     </div><!-- /slider-outer -->
 
     <div style="text-align:center;margin-top:12px;">
-      <a href="?action=articles" class="btn-see-all">
+      <a href="<?=path("lecteur","article")?>" class="btn-see-all">
         See All Articles
         <span class="book-chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
       </a>
@@ -302,7 +302,7 @@
     <div>
       <h4>Company</h4>
       <a href="#">home</a>
-      <a href="#">service</a>
+      <a href="<?=path("lecteur","article")?>">Article</a>
       <a href="#">a propos</a>
       <a href="#">Contactez-nous</a>
     </div>

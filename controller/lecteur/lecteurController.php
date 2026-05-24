@@ -2,6 +2,7 @@
 require_once ROOT."/model/lecteur/lecteurModel.php";
 
 $home = function(){
+    $articles = getArticleVisuel();
     loadView("lecteur/home");
 };
 

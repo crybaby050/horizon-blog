@@ -1,34 +1,75 @@
 <?php
-require_once ROOT."/model/lecteur/lecteurModel.php";
+require_once ROOT . "/model/lecteur/lecteurModel.php";
 
-$home = function(){
+/* ── HOME ────────────────────────────────────────────── */
+$home = function () {
     $articles = getArticleVisuel();
 
-    // Pour chaque article, on récupère ses catégories séparément
-    foreach($articles as &$article){
-        $article['categories'] = getCategoriesByArticle($article['id']);
+    foreach ($articles as &$article) {
+        $article['categories'] = getCategoriesByArticle((int) $article['id']);
     }
-    unset($article); // bonne pratique après un foreach par référence
+    unset($article);
 
     $categories = getPrincipalCategorie();
+
     loadView("lecteur/home", compact('articles', 'categories'));
 };
 
-$article = function(){
-    loadView("lecteur/article");
+/* ── LISTE DES ARTICLES (avec filtres + pagination PHP) ── */
+$article = function () {
+    // ── Paramètres GET ─────────────────────────────────
+    $statut  = trim($_GET['statut'] ?? '');
+    $search  = trim($_GET['q']      ?? '');
+    $page    = max(1, (int) ($_GET['page'] ?? 1));
+    $perPage = 9; // articles par page
+
+    // Statuts autorisés (whitelist)
+    $statutsValides = ['Actif', 'En attente', 'Invalide', 'Valide'];
+    if (!in_array($statut, $statutsValides, true)) {
+        $statut = '';
+    }
+
+    // ── Données ────────────────────────────────────────
+    $totalArticles = countArticles($statut, $search);
+    $totalPages    = (int) ceil($totalArticles / $perPage);
+    $page          = min($page, max(1, $totalPages)); // borne supérieure
+
+    $articles = getArticlesFiltres($statut, $search, $page, $perPage);
+
+    // Catégories de chaque article
+    foreach ($articles as &$art) {
+        $art['categories'] = getCategoriesByArticle((int) $art['id']);
+        // Valeurs par défaut pour vues et commentaires (à compléter si les colonnes existent)
+        $art['vues']        = $art['vues']        ?? 0;
+        $art['commentaires'] = $art['commentaires'] ?? 0;
+    }
+    unset($art);
+
+    loadView("lecteur/article", compact(
+        'articles',
+        'statut',
+        'search',
+        'page',
+        'totalPages',
+        'totalArticles'
+    ));
 };
 
-$actions=[
-    "home"=>$home,
-    //"categorie"=>$categorie,
-    "article"=>$article,
-    //"contact"=>$contact
+/* ── DISPATCH ────────────────────────────────────────── */
+$actions = [
+    "home"    => $home,
+    "article" => $article,
 ];
-$action=$_REQUEST["action"]??"home";
+
+$action = $_REQUEST["action"] ?? "home";
+
+// Passe l'action courante au layout pour le menu actif
+$GLOBALS['currentAction'] = $action;
 
 if (array_key_exists($action, $actions)) {
     $actions[$action]();
-}else{
-    echo "page introuvable ";
+} else {
+    http_response_code(404);
+    echo "Page introuvable";
     exit();
 }

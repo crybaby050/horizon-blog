@@ -1,12 +1,16 @@
 <?php
-function getArticleVisuel(){
-    $sql = "SELECT 
+
+/**
+ * Récupère les 5 derniers articles actifs pour le hero/slider de la home.
+ */
+function getArticleVisuel(): array {
+    $sql = "SELECT
         a.id,
         a.libelle,
         a.description,
         a.statut,
         a.date_creation,
-        ai.url AS image_p,
+        ai.url  AS image_p,
         au.prenom || ' ' || au.nom AS auteur
     FROM article a
     LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
@@ -17,70 +21,94 @@ function getArticleVisuel(){
     return executeSelect($sql);
 }
 
-function getCategoriesByArticle($article_id){
-    $sql = "SELECT c.libelle 
-    FROM categorie c
-    JOIN article_categorie ac ON ac.categorie_id = c.id
-    WHERE ac.article_id = $article_id";
-    return executeSelect($sql);
+/**
+ * Récupère les catégories d'un article donné.
+ */
+function getCategoriesByArticle(int $article_id): array {
+    $sql = "SELECT c.libelle
+            FROM categorie c
+            JOIN article_categorie ac ON ac.categorie_id = c.id
+            WHERE ac.article_id = :id";
+    return executeSelect($sql, [':id' => $article_id]);
 }
 
-function getPrincipalCategorie(){
+/**
+ * Récupère les 4 catégories principales.
+ */
+function getPrincipalCategorie(): array {
     $sql = "SELECT * FROM categorie LIMIT 4";
     return executeSelect($sql);
 }
 
-/*
-tous les articles avec leurs images
+/**
+ * Compte le nombre total d'articles selon les filtres appliqués.
+ *
+ * @param string $statut  Filtre par statut ('Actif', 'En attente', 'Invalide') ou '' pour tous
+ * @param string $search  Recherche dans le libellé
+ */
+function countArticles(string $statut = '', string $search = ''): int {
+    $where  = [];
+    $params = [];
 
-SELECT 
-    a.id,
-    a.libelle,
-    a.description,
-    a.statut,
-    ai.url,
-    ai.legende,
-    ai.ordre
-FROM article a
-LEFT JOIN article_image ai ON ai.article_id = a.id
-ORDER BY a.id, ai.ordre;
+    if ($statut !== '') {
+        $where[]          = "a.statut = :statut";
+        $params[':statut'] = $statut;
+    }
+    if ($search !== '') {
+        $where[]          = "a.libelle ILIKE :search";
+        $params[':search'] = '%' . $search . '%';
+    }
 
-Tous les articles avec uniquement leur image principale
-SELECT 
-    a.id,
-    a.libelle,
-    a.description,
-    a.statut,
-    ai.url AS image_principale
-FROM article a
-LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
-ORDER BY a.id;
+    $sql = "SELECT COUNT(*) AS total FROM article a"
+         . (count($where) ? ' WHERE ' . implode(' AND ', $where) : '');
 
+    return (int) executeSelect($sql, $params, true)['total'];
+}
 
-Un seul article avec toutes ses images
-SELECT 
-    a.id,
-    a.libelle,
-    a.description,
-    a.statut,
-    ai.url,
-    ai.legende,
-    ai.ordre
-FROM article a
-LEFT JOIN article_image ai ON ai.article_id = a.id
-WHERE a.id = 1
-ORDER BY ai.ordre;
+/**
+ * Récupère une page d'articles avec filtres et pagination.
+ *
+ * @param string $statut     Filtre par statut ou '' pour tous
+ * @param string $search     Recherche textuelle dans le libellé
+ * @param int    $page       Numéro de page (commence à 1)
+ * @param int    $perPage    Nombre d'articles par page
+ */
+function getArticlesFiltres(
+    string $statut  = '',
+    string $search  = '',
+    int    $page    = 1,
+    int    $perPage = 9
+): array {
+    $where  = [];
+    $params = [];
 
+    if ($statut !== '') {
+        $where[]          = "a.statut = :statut";
+        $params[':statut'] = $statut;
+    }
+    if ($search !== '') {
+        $where[]          = "a.libelle ILIKE :search";
+        $params[':search'] = '%' . $search . '%';
+    }
 
-Articles avec leur auteur + image principale 
-SELECT 
-    a.id,
-    a.libelle,
-    a.statut,
-    au.prenom || ' ' || au.nom AS auteur,
-    ai.url AS image_principale
-FROM article a
-LEFT JOIN auteur au       ON au.id = a.auteur_id
-LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
-ORDER BY a.date_creation DESC;
-*/
+    $offset          = ($page - 1) * $perPage;
+    $params[':limit']  = $perPage;
+    $params[':offset'] = $offset;
+
+    $sql = "SELECT
+        a.id,
+        a.libelle,
+        a.description,
+        a.statut,
+        a.date_creation,
+        ai.url  AS image_p,
+        au.prenom || ' ' || au.nom AS auteur
+    FROM article a
+    LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
+    LEFT JOIN auteur au ON au.id = a.auteur_id"
+    . (count($where) ? ' WHERE ' . implode(' AND ', $where) : '')
+    . " ORDER BY a.date_creation DESC
+       LIMIT :limit OFFSET :offset";
+
+    return executeSelect($sql, $params);
+}

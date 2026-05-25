@@ -33,29 +33,41 @@ function getCategoriesByArticle(int $article_id): array {
 }
 
 /**
- * Récupère les 4 catégories principales.
+ * Récupère les 4 premières catégories pour la home (avec image et icone).
  */
 function getPrincipalCategorie(): array {
-    $sql = "SELECT * FROM categorie LIMIT 4";
+    $sql = "SELECT id, libelle, image, icone,
+            (SELECT COUNT(*) FROM article_categorie ac WHERE ac.categorie_id = c.id) AS nb_articles
+            FROM categorie c
+            ORDER BY id
+            LIMIT 4";
+    return executeSelect($sql);
+}
+
+/**
+ * Récupère toutes les catégories pour la page catégorie (avec image et icone).
+ */
+function getAllCategories(): array {
+    $sql = "SELECT id, libelle, image, icone,
+            (SELECT COUNT(*) FROM article_categorie ac WHERE ac.categorie_id = c.id) AS nb_articles
+            FROM categorie c
+            ORDER BY id";
     return executeSelect($sql);
 }
 
 /**
  * Compte le nombre total d'articles selon les filtres appliqués.
- *
- * @param string $statut  Filtre par statut ('Actif', 'En attente', 'Invalide') ou '' pour tous
- * @param string $search  Recherche dans le libellé
  */
 function countArticles(string $statut = '', string $search = ''): int {
     $where  = [];
     $params = [];
 
     if ($statut !== '') {
-        $where[]          = "a.statut = :statut";
+        $where[]           = "a.statut = :statut";
         $params[':statut'] = $statut;
     }
     if ($search !== '') {
-        $where[]          = "a.libelle ILIKE :search";
+        $where[]           = "a.libelle ILIKE :search";
         $params[':search'] = '%' . $search . '%';
     }
 
@@ -67,11 +79,6 @@ function countArticles(string $statut = '', string $search = ''): int {
 
 /**
  * Récupère une page d'articles avec filtres et pagination.
- *
- * @param string $statut     Filtre par statut ou '' pour tous
- * @param string $search     Recherche textuelle dans le libellé
- * @param int    $page       Numéro de page (commence à 1)
- * @param int    $perPage    Nombre d'articles par page
  */
 function getArticlesFiltres(
     string $statut  = '',
@@ -83,15 +90,15 @@ function getArticlesFiltres(
     $params = [];
 
     if ($statut !== '') {
-        $where[]          = "a.statut = :statut";
+        $where[]           = "a.statut = :statut";
         $params[':statut'] = $statut;
     }
     if ($search !== '') {
-        $where[]          = "a.libelle ILIKE :search";
+        $where[]           = "a.libelle ILIKE :search";
         $params[':search'] = '%' . $search . '%';
     }
 
-    $offset          = ($page - 1) * $perPage;
+    $offset            = ($page - 1) * $perPage;
     $params[':limit']  = $perPage;
     $params[':offset'] = $offset;
 

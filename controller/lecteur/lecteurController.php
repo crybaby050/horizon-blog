@@ -1,7 +1,7 @@
 <?php
 require_once ROOT . "/model/lecteur/lecteurModel.php";
 
-/* ── HOME ────────────────────────────────────────────── */
+/* ── HOME ── */
 $home = function () {
     $articles = getArticleVisuel();
 
@@ -10,65 +10,55 @@ $home = function () {
     }
     unset($article);
 
-    $categories = getPrincipalCategorie();
+    $categories = getPrincipalCategorie(); // 4 catégories avec image + icone + nb_articles
 
     loadView("lecteur/home", compact('articles', 'categories'));
 };
 
-/* ── LISTE DES ARTICLES (avec filtres + pagination PHP) ── */
+/* ── LISTE DES ARTICLES ── */
 $article = function () {
-    // ── Paramètres GET ─────────────────────────────────
     $statut  = trim($_GET['statut'] ?? '');
     $search  = trim($_GET['q']      ?? '');
     $page    = max(1, (int) ($_GET['page'] ?? 1));
-    $perPage = 9; // articles par page
+    $perPage = 9;
 
-    // Statuts autorisés (whitelist)
     $statutsValides = ['Actif', 'En attente', 'Invalide', 'Valide'];
     if (!in_array($statut, $statutsValides, true)) {
         $statut = '';
     }
 
-    // ── Données ────────────────────────────────────────
     $totalArticles = countArticles($statut, $search);
     $totalPages    = (int) ceil($totalArticles / $perPage);
-    $page          = min($page, max(1, $totalPages)); // borne supérieure
+    $page          = min($page, max(1, $totalPages));
 
     $articles = getArticlesFiltres($statut, $search, $page, $perPage);
 
-    // Catégories de chaque article
     foreach ($articles as &$art) {
-        $art['categories'] = getCategoriesByArticle((int) $art['id']);
-        // Valeurs par défaut pour vues et commentaires (à compléter si les colonnes existent)
-        $art['vues']        = $art['vues']        ?? 0;
+        $art['categories']   = getCategoriesByArticle((int) $art['id']);
+        $art['vues']         = $art['vues']         ?? 0;
         $art['commentaires'] = $art['commentaires'] ?? 0;
     }
     unset($art);
 
     loadView("lecteur/article", compact(
-        'articles',
-        'statut',
-        'search',
-        'page',
-        'totalPages',
-        'totalArticles'
+        'articles', 'statut', 'search', 'page', 'totalPages', 'totalArticles'
     ));
 };
 
-$categorie = function(){
-    loadView("lecteur/categorie");
+/* ── PAGE CATÉGORIES ── */
+$categorie = function () {
+    $categories = getAllCategories(); // toutes les 10 catégories
+    loadView("lecteur/categorie", compact('categories'));
 };
 
-/* ── DISPATCH ────────────────────────────────────────── */
+/* ── DISPATCH ── */
 $actions = [
-    "home"    => $home,
-    "article" => $article,
-    "categorie" => $categorie
+    "home"      => $home,
+    "article"   => $article,
+    "categorie" => $categorie,
 ];
 
 $action = $_REQUEST["action"] ?? "home";
-
-// Passe l'action courante au layout pour le menu actif
 $GLOBALS['currentAction'] = $action;
 
 if (array_key_exists($action, $actions)) {

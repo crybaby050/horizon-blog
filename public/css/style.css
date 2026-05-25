@@ -1817,7 +1817,7 @@ footer a:hover { color: var(--green); }
 .categ-hero-small { height: 50%; }
 
 /* ── LISTE CATÉGORIES ── */
-.categ-list-section { padding: 0 80px 80px; max-width: 1440px; margin: 0 auto; }
+.categ-list-section { padding: 0 80px 80px; max-width: 1440px;margin: 15px; }
 .categ-list-header { margin-bottom: 36px; }
 .categ-list-header h2 {
   font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 6px;

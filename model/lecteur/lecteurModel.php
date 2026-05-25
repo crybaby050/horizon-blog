@@ -50,7 +50,7 @@ function getPrincipalCategorie(): array {
 function getAllCategories(): array {
     $sql = "SELECT id, libelle, image, icone,
             (SELECT COUNT(*) FROM article_categorie ac WHERE ac.categorie_id = c.id) AS nb_articles
-            FROM categorie
+            FROM categorie c
             ORDER BY id";
     return executeSelect($sql);
 }

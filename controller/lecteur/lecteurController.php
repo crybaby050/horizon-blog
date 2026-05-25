@@ -55,10 +55,15 @@ $article = function () {
     ));
 };
 
+$categorie = function(){
+    loadView("lecteur/categorie");
+};
+
 /* ── DISPATCH ────────────────────────────────────────── */
 $actions = [
     "home"    => $home,
     "article" => $article,
+    "categorie" => $categorie
 ];
 
 $action = $_REQUEST["action"] ?? "home";

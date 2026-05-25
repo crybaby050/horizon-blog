@@ -26,7 +26,7 @@
     <div class="nav-menu">
       <a href="<?= path('lecteur','home') ?>" <?= ($currentAction ?? '') === 'home' ? 'class="active"' : '' ?>>Accueil</a>
       <a href="<?= path('lecteur','article') ?>" <?= ($currentAction ?? '') === 'article' ? 'class="active"' : '' ?>>Articles</a>
-      <a href="#">Catégorie</a>
+      <a href="<?= path('lecteur','categorie') ?>" <?= ($currentAction ?? '') === 'categorie' ? 'class="active"' : '' ?>>Catégorie</a>
       <a href="#">Contact</a>
     </div>
 

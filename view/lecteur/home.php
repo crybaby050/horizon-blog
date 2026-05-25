@@ -2,7 +2,7 @@
 <div class="mobile-drawer" id="mobileDrawer">
   <a href="<?= path('lecteur','home') ?>" class="active">Accueil</a>
   <a href="<?= path('lecteur','article') ?>">Articles</a>
-  <a href="#">Catégorie</a>
+  <a href="<?= path('lecteur','categorie') ?>">Catégorie</a>
   <a href="#">Contact</a>
   <div class="mobile-drawer-auth">
     <button class="mobile-btn-s">S'inscrire</button>
@@ -36,7 +36,6 @@
       </a>
     </div>
 
-    <!-- Carte info : affiche l'article actif du slider -->
     <?php if (!empty($articles)): $first = $articles[0]; ?>
     <div class="hero-card">
       <div class="card-arc">
@@ -45,26 +44,17 @@
           <circle cx="68" cy="30" r="38" stroke="#1a9e5c" stroke-width="3.5" fill="none" opacity=".65"/>
         </svg>
       </div>
-
       <img class="avatar-img" src="https://i.pravatar.cc/80?img=5" alt="auteur"/>
-
       <div class="meta-label">Auteur</div>
-      <div class="meta-val" id="cardAuteur">
-        <?= htmlspecialchars($first['auteur'] ?? 'Inconnu') ?>
-      </div>
-
+      <div class="meta-val" id="cardAuteur"><?= htmlspecialchars($first['auteur'] ?? 'Inconnu') ?></div>
       <div class="meta-label">Date de publication</div>
-      <div class="meta-val" id="cardDate">
-        <?= date('d/m/Y', strtotime($first['date_creation'])) ?>
-      </div>
-
+      <div class="meta-val" id="cardDate"><?= date('d/m/Y', strtotime($first['date_creation'])) ?></div>
       <div class="meta-section-title">Catégorie</div>
       <div class="tags-wrap" id="cardTags">
         <?php foreach ($first['categories'] as $cat): ?>
           <span class="ctag"><?= htmlspecialchars($cat['libelle']) ?></span>
         <?php endforeach; ?>
       </div>
-
       <div class="card-vc">
         <span class="card-vc-c"></span>
         <span class="card-vc-c"></span>
@@ -73,7 +63,6 @@
     <?php endif; ?>
   </div>
 
-  <!-- Dots générés par PHP selon le nombre d'articles -->
   <div class="hero-dots" id="heroDots">
     <?php foreach ($articles as $index => $article): ?>
       <button class="hero-dot <?= $index === 0 ? 'active' : '' ?>"
@@ -137,7 +126,6 @@
           <?php endforeach; ?>
         </div>
       </div>
-
       <div class="sdots" id="sdots"></div>
     </div>
 
@@ -166,20 +154,23 @@
     <div class="sec-sub fade-up">Une liste de catégories qui donne de la diversité à nos contenus</div>
 
     <div class="categ-grid fade-up">
-      <!-- Sport -->
+      <?php foreach ($categories as $cat):
+        $couleur = getCouleurCategorie($cat['icone'] ?? '');
+        $icone   = getIconeCategorie($cat['icone'] ?? '', 22);
+        $img     = !empty($cat['image'])
+                    ? htmlspecialchars($cat['image'])
+                    : 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80';
+        $nbArt   = $cat['nb_articles'] ?? 0;
+      ?>
       <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&q=80" alt="Sport"/>
+        <img src="<?= $img ?>" alt="<?= htmlspecialchars($cat['libelle']) ?>"/>
         <div class="categ-overlay"></div>
-        <div class="categ-badge" style="background:#7c3aed;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            <path d="M2 12h20"/>
-          </svg>
-          Sport
+        <div class="categ-badge" style="background:<?= $couleur ?>;">
+          <?= $icone ?>
+          <?= htmlspecialchars($cat['libelle']) ?>
         </div>
-        <a href="<?= path('lecteur','article',['categorie'=>3]) ?>" class="categ-link">
-          Articles associés
+        <a href="<?= path('lecteur','article',['categorie'=>$cat['id']]) ?>" class="categ-link">
+          <?= $nbArt ?> article<?= $nbArt > 1 ? 's' : '' ?>
           <span class="book-chip">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -188,77 +179,11 @@
           </span>
         </a>
       </div>
-
-      <!-- Food -->
-      <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&q=80" alt="Food"/>
-        <div class="categ-overlay"></div>
-        <div class="categ-badge" style="background:linear-gradient(135deg,#f59e0b,#ea580c);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-            <line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-          </svg>
-          Food
-        </div>
-        <a href="<?= path('lecteur','article',['categorie'=>4]) ?>" class="categ-link">
-          Articles associés
-          <span class="book-chip">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-
-      <!-- Animals -->
-      <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=900&q=80" alt="Animals"/>
-        <div class="categ-overlay"></div>
-        <div class="categ-badge" style="background:#22c55e;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
-            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-          </svg>
-          Animals
-        </div>
-        <a href="<?= path('lecteur','article',['categorie'=>5]) ?>" class="categ-link">
-          Articles associés
-          <span class="book-chip">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-
-      <!-- Technology -->
-      <div class="categ-card">
-        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80" alt="Technology"/>
-        <div class="categ-overlay"></div>
-        <div class="categ-badge" style="background:linear-gradient(135deg,#6366f1,#3b82f6);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <rect x="2" y="3" width="20" height="14" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-          Technology
-        </div>
-        <a href="<?= path('lecteur','article',['categorie'=>1]) ?>" class="categ-link">
-          Articles associés
-          <span class="book-chip">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
+      <?php endforeach; ?>
     </div>
 
     <div style="text-align:center;margin-top:36px;">
-      <a href="<?= path('lecteur','categories') ?>" class="btn-see-all">
+      <a href="<?= path('lecteur','categorie') ?>" class="btn-see-all">
         Voir toutes les catégories
         <span class="book-chip">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">

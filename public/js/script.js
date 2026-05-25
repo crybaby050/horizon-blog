@@ -193,3 +193,73 @@ document.addEventListener('DOMContentLoaded', function () {
   }, { threshold: .1 });
   document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
 })();
+
+
+
+
+
+
+/* ── CONTACT FORM ────────────────────────────────────
+   Validation côté client + feedback visuel
+   ───────────────────────────────────────────────────── */
+(function () {
+  const form = document.querySelector('.contact-form');
+  if (!form) return; // pas sur la page contact
+
+  /* Validation d'un champ : ajoute/retire la classe error */
+  function validateField(field) {
+    const wrap = field.closest('.cf-field');
+    if (!wrap) return true;
+
+    let valid = true;
+
+    if (field.required && field.value.trim() === '') {
+      valid = false;
+    } else if (field.type === 'email' && field.value.trim() !== '') {
+      valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
+    }
+
+    wrap.classList.toggle('cf-field-error', !valid);
+    wrap.classList.toggle('cf-field-ok',    valid && field.value.trim() !== '');
+    return valid;
+  }
+
+  /* Validation en temps réel sur chaque champ */
+  form.querySelectorAll('input, select, textarea').forEach(field => {
+    field.addEventListener('blur',  () => validateField(field));
+    field.addEventListener('input', () => {
+      if (field.closest('.cf-field').classList.contains('cf-field-error')) {
+        validateField(field);
+      }
+    });
+  });
+
+  /* Soumission : valide tout avant d'envoyer */
+  form.addEventListener('submit', function (e) {
+    let allValid = true;
+    form.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(field => {
+      if (!validateField(field)) allValid = false;
+    });
+
+    if (!allValid) {
+      e.preventDefault();
+      /* Scroll vers le premier champ en erreur */
+      const firstError = form.querySelector('.cf-field-error');
+      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    /* Feedback visuel sur le bouton pendant l'envoi */
+    const btn = form.querySelector('.cf-submit');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+             style="animation:spin .7s linear infinite">
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        Envoi en cours…`;
+    }
+  });
+})();

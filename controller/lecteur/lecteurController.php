@@ -51,11 +51,16 @@ $categorie = function () {
     loadView("lecteur/categorie", compact('categories'));
 };
 
+$contact = function (){
+    loadView("lecteur/contact");
+};
+
 /* ── DISPATCH ── */
 $actions = [
     "home"      => $home,
     "article"   => $article,
     "categorie" => $categorie,
+    "contact" => $contact
 ];
 
 $action = $_REQUEST["action"] ?? "home";

@@ -277,40 +277,6 @@
   </div>
 </section>
 
-<!-- ════════ FOOTER ════════ -->
-<footer>
-  <div class="footer-inner">
-    <div>
-      <a href="<?= path('lecteur','home') ?>" class="flogo">
-        <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-          <path d="M16 4C10 4 5 9 5 15.5c0 3.2 1.6 5.9 4.2 7.8 1.1.8 2.6-.3 2.1-1.6-1-2.8-1-5.8 1.2-8 3.2-3.2 8.5-3.2 11.8-1 1 .6 2.2-.3 1.6-1.5C24 9 20.3 4 16 4z" fill="#1a9e5c"/>
-          <path d="M8.5 23.5c0 0 2.2-2.2 5.5-2.2s5.5 1.2 5.5 3.2c0 1.6-1.1 2.2-2.2 2.2-3.3 0-8.8-3.2-8.8-3.2z" fill="#157a47"/>
-        </svg>
-        <span class="flogo-text"><span class="fh">Horizon</span><span class="fb">Blog</span></span>
-      </a>
-      <p>A digital product agency focusing on branding, UI/UX design, and web development for forward-thinking companies.</p>
-      <div class="social-row">
-        <a href="#" class="sico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-        <a href="#" class="sico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="#" class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
-        <a href="#" class="sico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      </div>
-    </div>
-    <div>
-      <h4>Legal</h4>
-      <a href="#">Terms &amp; conditions</a>
-      <a href="#">Privacy Policy</a>
-    </div>
-    <div>
-      <h4>Company</h4>
-      <a href="<?= path('lecteur','home') ?>">Accueil</a>
-      <a href="<?= path('lecteur','article') ?>">Articles</a>
-      <a href="#">À propos</a>
-      <a href="#">Contactez-nous</a>
-    </div>
-  </div>
-  <div class="footer-divider">© <?= date('Y') ?> HorizonBlog. Tous droits réservés.</div>
-</footer>
 
 <!-- Données du hero injectées pour script.js -->
 <script>

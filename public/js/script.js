@@ -392,3 +392,20 @@ function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
             .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
+
+// Toggle user dropdown
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+}
+
+// Fermer le dropdown en cliquant ailleurs
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('userMenu');
+    const dropdown = document.getElementById('userDropdown');
+    if (menu && dropdown && !menu.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});

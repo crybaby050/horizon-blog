@@ -135,7 +135,7 @@
                   <?= $art['commentaires'] ?? 0 ?>
                 </div>
               </div>
-              <a href="<?= path('lecteur','article',['id'=>$art['id']]) ?>" class="btn-lire">
+              <a href="<?= path('lecteur','detail',['id'=>$art['id']]) ?>" class="btn-lire">
                 Lire
                 <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round">
                   <path d="M5 12h14M12 5l7 7-7 7"/>

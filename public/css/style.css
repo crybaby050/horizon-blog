@@ -60,6 +60,10 @@ nav {
   background: #fff; color: var(--green);
   border: 2px solid var(--green);
   box-shadow: 0 3px 10px rgba(26,158,92,.2);
+  border-radius: 12px;
+  padding: 5px;
+  text-align: center;
+  text-decoration: none;
 }
 .btn-s:hover { background: var(--green-light); transform: translateY(-1px); }
 .btn-c {
@@ -67,6 +71,10 @@ nav {
   border: 2px solid var(--green);
   box-shadow: 0 3px 14px rgba(26,158,92,.35);
   width: 130px;
+  border-radius: 12px;
+  padding: 5px;
+  text-align: center;
+  text-decoration: none;
 }
 .btn-c:hover { background: var(--green-dark); border-color: var(--green-dark); transform: translateY(-1px); }
 
@@ -930,6 +938,7 @@ nav {
   transition: background .2s, color .2s, transform .15s;
   border-radius: 8px;
 }
+/*
 .btn-s {
   background: #fff; color: var(--green);
   border: 2px solid var(--green);
@@ -943,6 +952,7 @@ nav {
   width: 130px;
 }
 .btn-c:hover { background: var(--green-dark); border-color: var(--green-dark); transform: translateY(-1px); }
+*/
 
 /* ════════════════════════════════════════════════════
    HERO
@@ -2785,3 +2795,19 @@ footer a:hover { color: var(--green); }
         padding: 1.5rem;
     }
 }
+
+
+/* ── INPUT PASSWORD WRAP ── */
+.input-password-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.input-password-wrap input {
+  width: 100%; padding-right: 42px;
+}
+.toggle-password {
+  position: absolute; right: 12px;
+  background: none; border: none; cursor: pointer;
+  color: var(--gray); padding: 0; display: flex; align-items: center;
+  transition: color .2s;
+}
+.toggle-password:hover { color: var(--green); }

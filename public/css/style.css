@@ -2811,3 +2811,50 @@ footer a:hover { color: var(--green); }
   transition: color .2s;
 }
 .toggle-password:hover { color: var(--green); }
+
+
+
+
+/* ── USER MENU (connecté) ── */
+.user-menu { position: relative; }
+.user-avatar {
+  display: flex; align-items: center; gap: 8px;
+  background: #f3f4f6; border: 1px solid #e5e7eb;
+  border-radius: 40px; padding: 4px 12px 4px 8px;
+  cursor: pointer; font-family: 'Poppins', sans-serif;
+  transition: background 0.2s;
+}
+.user-avatar:hover { background: #e5e7eb; }
+.user-initials {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700;
+}
+.user-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 14px; min-width: 240px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: all 0.2s; z-index: 1000;
+}
+.user-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.dropdown-header { padding: 12px 14px; }
+.dropdown-name { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+.dropdown-email { font-size: 0.7rem; color: var(--gray); margin-top: 2px; }
+.dropdown-badge {
+  display: inline-block; margin-top: 6px; padding: 2px 8px;
+  border-radius: 999px; font-size: 0.65rem; font-weight: 700;
+}
+.badge-auteur { background: var(--green-light); color: var(--green-dark); }
+.badge-lecteur { background: #e8f0fe; color: #1a56db; }
+.dropdown-divider { height: 1px; background: #e5e7eb; margin: 0; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; color: var(--text); text-decoration: none;
+  font-size: 0.8rem; transition: background 0.2s;
+}
+.dropdown-item:hover { background: #f9fafb; }
+.dropdown-item.logout { color: #dc2626; }
+.dropdown-item.logout:hover { background: #fef2f2; }

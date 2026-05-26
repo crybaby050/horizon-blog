@@ -2858,3 +2858,90 @@ footer a:hover { color: var(--green); }
 .dropdown-item:hover { background: #f9fafb; }
 .dropdown-item.logout { color: #dc2626; }
 .dropdown-item.logout:hover { background: #fef2f2; }
+
+
+
+/* ============================================
+   MOBILE DRAWER - VERSION CONNECTÉE
+   ============================================ */
+.mobile-user-info {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 16px;
+}
+.mobile-user-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 12px;
+}
+.mobile-user-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+}
+.mobile-user-email {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 4px;
+}
+.mobile-user-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.mobile-drawer-link {
+    display: block;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.2s;
+}
+.mobile-drawer-link.active {
+    color: var(--green);
+}
+.mobile-drawer-link.logout {
+    color: #dc2626;
+}
+.mobile-drawer-link:hover {
+    background: #f9fafb;
+}
+.mobile-drawer-auth {
+    margin-top: 20px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.mobile-btn-s, .mobile-btn-c {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.mobile-btn-s {
+    background: #fff;
+    color: var(--green);
+    border: 2px solid var(--green);
+}
+.mobile-btn-c {
+    background: var(--green);
+    color: #fff;
+    border: 2px solid var(--green);
+}

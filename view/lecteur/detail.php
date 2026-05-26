@@ -225,7 +225,7 @@ $imgSim = function(array $art): string {
                   <input type="hidden" name="post_action" value="edit_comment"/>
                   <input type="hidden" name="comment_id" value="<?= $com['id'] ?>"/>
                   <textarea class="dc-edit-textarea" name="contenu"
-                            id="dc-edit-ta-<?= $com['id'] ?>"><?= htmlspecialchars($com['contenu']) ?></textarea>
+                            id="dc-edit-ta-<?= $com['id'] ?>"><?= htmlspecialchars($com['contenue']) ?></textarea>
                   <div class="dc-edit-btns">
                     <button type="button" class="dc-cancel" onclick="cancelEdit(<?= $com['id'] ?>)">Annuler</button>
                     <button type="submit" class="dc-submit">Enregistrer</button>

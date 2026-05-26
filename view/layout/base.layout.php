@@ -27,7 +27,7 @@
       <a href="<?= path('lecteur','home') ?>" <?= ($currentAction ?? '') === 'home' ? 'class="active"' : '' ?>>Accueil</a>
       <a href="<?= path('lecteur','article') ?>" <?= ($currentAction ?? '') === 'article' ? 'class="active"' : '' ?>>Articles</a>
       <a href="<?= path('lecteur','categorie') ?>" <?= ($currentAction ?? '') === 'categorie' ? 'class="active"' : '' ?>>Catégorie</a>
-      <a href="<?= path('lecteur','contact') ?>" <?= ($currentAction ?? '') === 'contact' ? 'class="active"' : '' ?>">Contact</a>
+      <a href="<?= path('lecteur','contact') ?>" <?= ($currentAction ?? '') === 'contact' ? 'class="active"' : '' ?>>Contact</a>
     </div>
 
     <!--<div class="auth-wrap">
@@ -37,7 +37,6 @@
       </div>
     </div>-->
 
-    <!-- Remplacer la section auth-wrap dans base.layout.php par : -->
 
 <div class="auth-wrap">
     <?php if (isset($_SESSION['user'])): 

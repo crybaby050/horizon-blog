@@ -409,3 +409,19 @@ document.addEventListener('click', function(e) {
         dropdown.classList.remove('open');
     }
 });
+
+/* ── TOGGLE PASSWORD ── */
+function togglePassword(inputId, btn) {
+  const input  = document.getElementById(inputId);
+  const eyeShow = btn.querySelector('.eye-show');
+  const eyeHide = btn.querySelector('.eye-hide');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeShow.style.display = 'none';
+    eyeHide.style.display = '';
+  } else {
+    input.type = 'password';
+    eyeShow.style.display = '';
+    eyeHide.style.display = 'none';
+  }
+}

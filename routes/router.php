@@ -2,7 +2,8 @@
 $controllers=[
     "lecteur"=>"lecteur",
     "auteur"=>"auteur",
-    "admin"=>"admin"
+    "admin"=>"admin",
+    "auth"=>"auth" 
 
 ];
 

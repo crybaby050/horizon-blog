@@ -30,12 +30,53 @@
       <a href="<?= path('lecteur','contact') ?>" <?= ($currentAction ?? '') === 'contact' ? 'class="active"' : '' ?>">Contact</a>
     </div>
 
-    <div class="auth-wrap">
+    <!--<div class="auth-wrap">
       <div class="auth-fused">
         <button class="btn-s">S'inscrire</button>
         <button class="btn-c">Se Connecter</button>
       </div>
-    </div>
+    </div>-->
+
+    <!-- Remplacer la section auth-wrap dans base.layout.php par : -->
+
+<div class="auth-wrap">
+    <?php if (isset($_SESSION['user'])): 
+        $user = $_SESSION['user'];
+        $initiales = strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1));
+    ?>
+        <div class="user-menu" id="userMenu">
+            <button class="user-avatar" onclick="toggleUserDropdown()">
+                <span class="user-initials"><?= htmlspecialchars($initiales) ?></span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-name"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></div>
+                    <div class="dropdown-email"><?= htmlspecialchars($user['email']) ?></div>
+                    <div class="dropdown-badge <?= $user['type'] === 'auteur' ? 'badge-auteur' : 'badge-lecteur' ?>">
+                        <?= $user['type'] === 'auteur' ? 'Auteur' : 'Lecteur' ?>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="<?= path('auth', 'logout') ?>" class="dropdown-item logout">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Se déconnecter
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="auth-fused">
+            <a href="<?= path('auth', 'register') ?>" class="btn-s">S'inscrire</a>
+            <a href="<?= path('auth', 'login') ?>" class="btn-c">Se Connecter</a>
+        </div>
+    <?php endif; ?>
+</div>
 
     <!-- Hamburger (mobile/tablette) -->
     <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">

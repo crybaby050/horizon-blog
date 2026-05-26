@@ -55,12 +55,19 @@ $contact = function (){
     loadView("lecteur/contact");
 };
 
+$detail = function () {
+    $id = (int) ($_GET['id'] ?? 0);
+    // récupérer l'article par id plus tard
+    loadView("lecteur/detail", compact('id'));
+};
+
 /* ── DISPATCH ── */
 $actions = [
     "home"      => $home,
     "article"   => $article,
     "categorie" => $categorie,
-    "contact" => $contact
+    "contact" => $contact,
+    "detail" => $detail
 ];
 
 $action = $_REQUEST["action"] ?? "home";

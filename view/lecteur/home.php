@@ -24,7 +24,7 @@
       <p id="heroDesc">
         <?= htmlspecialchars(!empty($articles) ? $articles[0]['description'] : '') ?>
       </p>
-      <a href="<?= !empty($articles) ? '?action=article&id='.$articles[0]['id'] : '#' ?>"
+      <a href="<?= !empty($articles) ? path('lecteur','detail',['id'=>$articles[0]['id']]) : '#' ?>"
          class="btn-lire-hero" id="btnLireHero">
         Lire l'article
         <span class="book-icon-wrap">
@@ -97,7 +97,7 @@
                      alt="<?= htmlspecialchars($art['libelle']) ?>"/>
                 <div class="flip-front-overlay">
                   <h3><?= htmlspecialchars($art['libelle']) ?></h3>
-                  <a href="<?= path('lecteur','article',['id'=>$art['id']]) ?>" class="btn-read">
+                  <a href="<?= path('lecteur','detail',['id'=>$art['id']]) ?>" class="btn-read">
                     Lire l'article
                     <span class="book-chip">
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
@@ -111,7 +111,7 @@
               <div class="flip-back">
                 <h3><?= htmlspecialchars($art['libelle']) ?></h3>
                 <p><?= htmlspecialchars($art['description']) ?></p>
-                <a href="<?= path('lecteur','article',['id'=>$art['id']]) ?>" class="btn-read">
+                <a href="<?= path('lecteur','detail',['id'=>$art['id']]) ?>" class="btn-read">
                   Lire l'article
                   <span class="book-chip">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">

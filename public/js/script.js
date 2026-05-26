@@ -1,10 +1,3 @@
-/* ════════════════════════════════════════════════════
-   HorizonBlog — script.js
-   Interactions UI : hero slider, article slider, menu mobile, scroll fade
-   NB : les données du hero (slides) sont injectées par PHP
-        via une balise <script> dans home.php AVANT ce fichier
-   ════════════════════════════════════════════════════ */
-
 /* ── HERO SLIDER ─────────────────────────────────────
    Dépend de `window.heroSlides` injecté par PHP dans home.php
    ───────────────────────────────────────────────────── */
@@ -45,7 +38,7 @@
       heroTitle.textContent = s.title;
       heroDesc.textContent  = s.desc;
 
-      document.getElementById('btnLireHero').href = `?action=article&id=${s.id}`;
+      document.getElementById('btnLireHero').href = `?controller=lecteur&action=detail&id=${s.id}`;
 
       document.getElementById('cardAuteur').textContent = s.auteur;
       document.getElementById('cardDate').textContent   = s.date;
@@ -263,3 +256,207 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 })();
+
+
+
+
+/* ════════════════════════════════════════════════════
+   DETAIL ARTICLE — à ajouter à la fin de script.js
+   ════════════════════════════════════════════════════ */
+
+/* ── TOAST ── */
+function showToast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ── MODALS ── */
+let _pendingCommentId = null;
+
+function openModal(id, commentId = null) {
+  _pendingCommentId = commentId;
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+
+/* ── SIGNALEMENT ── */
+function submitSignal(type) {
+  const msg = type === 'article'
+    ? '✅ Article signalé. Merci pour votre retour.'
+    : '✅ Commentaire signalé. Merci pour votre retour.';
+  showToast(msg);
+}
+
+/* ── SUPPRIMER COMMENTAIRE ── */
+function deleteComment() {
+  if (!_pendingCommentId) return;
+  const el = document.getElementById('comment-' + _pendingCommentId);
+  if (!el) return;
+  el.style.transition = 'opacity .3s, transform .3s';
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-10px)';
+  setTimeout(() => {
+    el.remove();
+    updateCommentCount(-1);
+    showToast('🗑️ Commentaire supprimé.');
+  }, 300);
+  _pendingCommentId = null;
+}
+
+/* ── MODIFIER COMMENTAIRE ── */
+function editComment(id) {
+  // Ferme toutes les zones d'édition ouvertes
+  document.querySelectorAll('.dc-edit-zone').forEach(z => z.style.display = 'none');
+  document.querySelectorAll('.dc-item-text').forEach(t => t.style.display = '');
+
+  const textEl = document.getElementById('comment-text-' + id);
+  const editEl = document.getElementById('dc-edit-' + id);
+  const taEl   = document.getElementById('dc-edit-ta-' + id);
+
+  if (!textEl || !editEl || !taEl) return;
+
+  textEl.style.display = 'none';
+  editEl.style.display = 'block';
+  taEl.focus();
+  // Place le curseur à la fin
+  taEl.setSelectionRange(taEl.value.length, taEl.value.length);
+}
+
+function cancelEdit(id) {
+  const textEl = document.getElementById('comment-text-' + id);
+  const editEl = document.getElementById('dc-edit-' + id);
+  if (textEl) textEl.style.display = '';
+  if (editEl) editEl.style.display = 'none';
+}
+
+function saveEdit(id) {
+  const textEl = document.getElementById('comment-text-' + id);
+  const taEl   = document.getElementById('dc-edit-ta-' + id);
+  const editEl = document.getElementById('dc-edit-' + id);
+
+  if (!textEl || !taEl || !editEl) return;
+  const newText = taEl.value.trim();
+  if (!newText) { showToast('⚠️ Le commentaire ne peut pas être vide.'); return; }
+
+  textEl.textContent = newText;
+  textEl.style.display = '';
+  editEl.style.display = 'none';
+  showToast('✅ Commentaire modifié.');
+}
+
+/* ── NOUVEAU COMMENTAIRE ── */
+function expandForm() {
+  const actions = document.getElementById('dcFormActions');
+  const ta      = document.getElementById('dcTextarea');
+  if (!actions || !ta) return;
+  actions.style.display = 'flex';
+  ta.style.minHeight    = '80px';
+}
+
+function collapseForm() {
+  const actions = document.getElementById('dcFormActions');
+  const ta      = document.getElementById('dcTextarea');
+  if (!actions || !ta) return;
+  actions.style.display = 'none';
+  ta.style.minHeight    = '40px';
+  ta.value = '';
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function submitComment() {
+  const ta = document.getElementById('dcTextarea');
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) { showToast('⚠️ Écrivez un commentaire avant de publier.'); return; }
+
+  const list = document.getElementById('dcList');
+  if (!list) return;
+
+  // Crée un nouvel item
+  const id  = Date.now();
+  const div = document.createElement('div');
+  div.className = 'dc-item';
+  div.id = 'comment-' + id;
+  div.innerHTML = `
+    <div class="dc-item-avatar" style="background:#e8f7f0;color:#0f6e40">Moi</div>
+    <div class="dc-item-body">
+      <div class="dc-item-header">
+        <div>
+          <span class="dc-item-name">Moi</span>
+          <span class="dc-item-date">À l'instant</span>
+        </div>
+        <div class="dc-item-actions">
+          <button class="dc-action-btn dc-edit-btn" onclick="editComment(${id})">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier
+          </button>
+          <button class="dc-action-btn dc-delete-btn" onclick="openModal('modalDeleteComment', ${id})">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Supprimer
+          </button>
+          <button class="dc-action-btn dc-report-btn" onclick="openModal('modalSignalComment', ${id})">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            Signaler
+          </button>
+        </div>
+      </div>
+      <div class="dc-item-text" id="comment-text-${id}">${escapeHtml(text)}</div>
+      <div class="dc-edit-zone" id="dc-edit-${id}" style="display:none">
+        <textarea class="dc-edit-textarea" id="dc-edit-ta-${id}">${escapeHtml(text)}</textarea>
+        <div class="dc-edit-btns">
+          <button class="dc-cancel" onclick="cancelEdit(${id})">Annuler</button>
+          <button class="dc-submit" onclick="saveEdit(${id})">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  `;
+  list.prepend(div);
+  updateCommentCount(1);
+  collapseForm();
+  showToast('💬 Commentaire publié !');
+}
+
+/* ── COMPTEUR COMMENTAIRES ── */
+function updateCommentCount(delta) {
+  const el = document.querySelector('.dc-count');
+  if (!el) return;
+  const current = parseInt(el.textContent) || 0;
+  el.textContent = Math.max(0, current + delta);
+}
+
+/* ── PARTAGE ── */
+function shareClick(btn) {
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 700);
+}
+
+function copyLink(btn) {
+  navigator.clipboard.writeText(window.location.href).catch(() => {});
+  btn.classList.add('copied');
+  showToast('🔗 Lien copié !');
+  setTimeout(() => btn.classList.remove('copied'), 800);
+}
+
+/* ── ÉCHAPPER HTML ── */
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}

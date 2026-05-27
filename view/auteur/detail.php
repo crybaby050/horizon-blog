@@ -6,7 +6,9 @@
     <div class="au-breadcrumb">
       <a href="<?= path('auteur','articles') ?>">Mes articles</a>
       <span>›</span>
-      <span><?= htmlspecialchars(mb_strimwidth($article['libelle'], 0, 50, '…')) ?></span>
+      <span><?= htmlspecialchars(strlen($article['libelle']) > 50 
+    ? substr($article['libelle'], 0, 50) . '…' 
+    : $article['libelle']) ?></span>
     </div>
     <div class="au-page-header-actions">
       <a href="<?= path('auteur','modifier',['id'=>$article['id']]) ?>" class="au-btn-primary">

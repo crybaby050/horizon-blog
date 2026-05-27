@@ -14,32 +14,18 @@
 
   <!-- Logo -->
   <a href="<?= path('auteur','dashboard') ?>" class="au-sidebar-logo">
-    <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
       <path d="M16 4C10 4 5 9 5 15.5c0 3.2 1.6 5.9 4.2 7.8 1.1.8 2.6-.3 2.1-1.6-1-2.8-1-5.8 1.2-8 3.2-3.2 8.5-3.2 11.8-1 1 .6 2.2-.3 1.6-1.5C24 9 20.3 4 16 4z" fill="#1a9e5c"/>
       <path d="M8.5 23.5c0 0 2.2-2.2 5.5-2.2s5.5 1.2 5.5 3.2c0 1.6-1.1 2.2-2.2 2.2-3.3 0-8.8-3.2-8.8-3.2z" fill="#157a47"/>
     </svg>
-    <span class="au-logo-text"><span class="au-logo-h">Horizon</span><span class="au-logo-b">Blog</span></span>
+    <span class="au-logo-text">
+      <span class="au-logo-h">Horizon</span><span class="au-logo-b">Blog</span>
+    </span>
   </a>
-
-  <!-- Profil auteur -->
-  <div class="au-sidebar-profile">
-    <?php
-        $prenom     = $_SESSION['user']['prenom'] ?? '';
-        $nom        = $_SESSION['user']['nom']    ?? '';
-        $initiales  = strtoupper(substr($prenom,0,1) . substr($nom,0,1)) ?: 'AU';
-        $nomComplet = trim($prenom . ' ' . $nom) ?: 'Auteur';
-?>
-    <div class="au-profile-avatar"><?= $initiales ?></div>
-    <div class="au-profile-info">
-      <div class="au-profile-name"><?= htmlspecialchars($nomComplet) ?></div>
-      <div class="au-profile-role">
-        <span class="au-role-dot"></span>Auteur
-      </div>
-    </div>
-  </div>
 
   <!-- Navigation -->
   <nav class="au-nav">
+
     <div class="au-nav-group">
       <div class="au-nav-label">Principal</div>
 
@@ -55,9 +41,8 @@
       <a href="<?= path('auteur','ajout') ?>"
          class="au-nav-item <?= ($currentAction ?? '') === 'ajout' ? 'active' : '' ?>">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="16"/>
-          <line x1="8" y1="12" x2="16" y2="12"/>
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
         </svg>
         <span>Nouvel article</span>
       </a>
@@ -94,6 +79,7 @@
         <span>Déconnexion</span>
       </a>
     </div>
+
   </nav>
 </aside>
 
@@ -109,7 +95,7 @@
       <span></span><span></span><span></span>
     </button>
 
-    <div class="au-topbar-title" id="auTopbarTitle">
+    <div class="au-topbar-title">
       <?php
         $titles = [
           'dashboard' => 'Dashboard',
@@ -124,13 +110,29 @@
 
     <div class="au-topbar-right">
       <a href="<?= path('auteur','ajout') ?>" class="au-topbar-btn">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="14" height="14">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="13" height="13" stroke="white">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
         </svg>
         Nouvel article
       </a>
-      <div class="au-topbar-avatar"><?= $initiales ?></div>
+
+      <div class="au-topbar-icon-btn" title="Notifications">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#6b7280">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="au-notif-dot"></span>
+      </div>
+
+      <?php
+        $prenom    = $_SESSION['user']['prenom'] ?? '';
+        $nom       = $_SESSION['user']['nom']    ?? '';
+        $initiales = strtoupper(substr($prenom,0,1) . substr($nom,0,1)) ?: 'AU';
+      ?>
+      <div class="au-topbar-avatar" title="<?= htmlspecialchars($prenom . ' ' . $nom) ?>">
+        <?= $initiales ?>
+      </div>
     </div>
   </header>
 
@@ -139,11 +141,9 @@
     <?= $content ?>
   </main>
 
-</div><!-- /au-main-wrap -->
+</div>
 
-<!-- Toast -->
 <div class="au-toast" id="auToast"></div>
-
 <script src="<?= WEBROOT ?>js/script.js"></script>
 </body>
 </html>

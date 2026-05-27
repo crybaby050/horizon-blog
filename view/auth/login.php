@@ -6,19 +6,19 @@
 <form method="POST" action="" class="auth-form">
     <div class="form-group">
         <label for="email">Adresse email</label>
-        <input type="email" id="email" name="email" required 
+        <input type="email" id="email" name="email" 
                placeholder="exemple@email.com"
                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"/>
     </div>
     
     <div class="form-group">
         <!--<label for="mot_de_passe">Mot de passe</label>
-        <input type="password" id="mot_de_passe" name="mot_de_passe" required 
+        <input type="password" id="mot_de_passe" name="mot_de_passe" 
                placeholder="••••••"/>-->
 
                <label for="mot_de_passe">Mot de passe</label>
   <div class="input-password-wrap">
-    <input type="password" id="mot_de_passe" name="mot_de_passe" required placeholder="••••••"/>
+    <input type="password" id="mot_de_passe" name="mot_de_passe" placeholder="********"/>
     <button type="button" class="toggle-password" onclick="togglePassword('mot_de_passe', this)">
       <svg class="eye-show" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>

@@ -2,9 +2,9 @@
 require_once ROOT . "/model/auth/authModel.php";
 
 // Démarrer la session si pas déjà fait
-if (session_status() === PHP_SESSION_NONE) {
+/*if (session_status() === PHP_SESSION_NONE) {
     session_start();
-}
+}*/
 
 /* ── FORMULAIRE INSCRIPTION ── */
 $register = function () {
@@ -93,11 +93,13 @@ $login = function () {
             }
             
             if ($user) {
-                header("Location: " . path('lecteur', 'home'));
-                exit();
-            } else {
-                $error = "Email ou mot de passe incorrect, ou compte inactif.";
-            }
+    if ($userType === 'auteur') {
+        header("Location: " . path('auteur', 'dashboard'));
+    } else {
+        header("Location: " . path('lecteur', 'home'));
+    }
+    exit();
+}
         }
     }
     

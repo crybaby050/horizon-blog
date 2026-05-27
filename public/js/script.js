@@ -425,3 +425,328 @@ function togglePassword(inputId, btn) {
     eyeHide.style.display = 'none';
   }
 }
+
+
+/* ── USER DROPDOWN ── */
+function toggleUserDropdown() {
+  const dropdown = document.getElementById('userDropdown');
+  if (!dropdown) return;
+  dropdown.classList.toggle('open');
+}
+
+// Fermer le dropdown en cliquant ailleurs
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('userMenu');
+  const dropdown = document.getElementById('userDropdown');
+  if (!menu || !dropdown) return;
+  if (!menu.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+
+
+
+/* ════════════════════════════════════════════════════
+   ESPACE AUTEUR — à ajouter à la fin de script.js
+   ════════════════════════════════════════════════════ */
+
+/* ── SIDEBAR MOBILE ── */
+window.toggleSidebar = function () {
+  const sidebar  = document.getElementById('auSidebar');
+  const overlay  = document.getElementById('auOverlay');
+  const burger   = document.getElementById('auHamburger');
+  if (!sidebar) return;
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+  burger && burger.classList.toggle('open');
+  document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+};
+
+/* ── TOAST AUTEUR ── */
+function auShowToast(msg, duration = 2800) {
+  const t = document.getElementById('auToast') || document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ── MODAL SUPPRESSION ARTICLE ── */
+window.openDeleteModal = function (id, titre) {
+  const overlay  = document.getElementById('deleteModal');
+  const idInput  = document.getElementById('deleteArticleId');
+  const titleEl  = document.getElementById('deleteArticleTitle');
+  if (!overlay) return;
+  if (idInput)  idInput.value = id;
+  if (titleEl)  titleEl.textContent = titre;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeDeleteModal = function () {
+  const overlay = document.getElementById('deleteModal');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// Fermer en cliquant sur l'overlay
+document.addEventListener('DOMContentLoaded', function () {
+  const deleteModal = document.getElementById('deleteModal');
+  if (deleteModal) {
+    deleteModal.addEventListener('click', function (e) {
+      if (e.target === deleteModal) closeDeleteModal();
+    });
+  }
+});
+
+/* ── GRAPHIQUE DASHBOARD (Chart.js CDN) ── */
+(function () {
+  if (typeof window.auChartData === 'undefined') return;
+  if (!document.getElementById('auChart')) return;
+
+  // Charger Chart.js dynamiquement
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  script.onload = function () { renderAuChart(); };
+  document.head.appendChild(script);
+
+  function renderAuChart() {
+    const data   = window.auChartData;
+    const labels = data.map(d => d.mois);
+    const vues   = data.map(d => parseInt(d.total_vues)   || 0);
+    const arts   = data.map(d => parseInt(d.nb_articles)  || 0);
+
+    const ctx = document.getElementById('auChart').getContext('2d');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Vues',
+            data: vues,
+            backgroundColor: 'rgba(26,158,92,.15)',
+            borderColor: '#1a9e5c',
+            borderWidth: 2,
+            borderRadius: 6,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Articles',
+            data: arts,
+            type: 'line',
+            borderColor: '#4f6ef7',
+            backgroundColor: 'rgba(79,110,247,.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#4f6ef7',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y1',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1f2937',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,.8)',
+            padding: 12,
+            borderRadius: 10,
+            callbacks: {
+              label: ctx => ctx.dataset.label + ' : ' + ctx.parsed.y.toLocaleString('fr-FR'),
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
+          },
+          y: {
+            position: 'left',
+            grid: { color: '#f0f0f0' },
+            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
+          },
+          y1: {
+            position: 'right',
+            grid: { display: false },
+            ticks: {
+              font: { family: 'Poppins', size: 11 }, color: '#4f6ef7',
+              stepSize: 1,
+            },
+          },
+        },
+      },
+    });
+  }
+})();
+
+/* ── FORMULAIRE ARTICLE (ajout + modifier) ── */
+(function () {
+  const form = document.getElementById('articleForm');
+  if (!form) return;
+
+  /* Compteurs de caractères */
+  const titreInput   = document.getElementById('af-titre');
+  const contenuInput = document.getElementById('af-contenu');
+  const titreCount   = document.getElementById('titreCount');
+  const contenuCount = document.getElementById('contenuCount');
+
+  function updateCount(input, counter, max) {
+    if (!input || !counter) return;
+    const len = input.value.length;
+    counter.textContent = len;
+    if (max) counter.style.color = len > max * 0.9 ? '#dc2626' : '#9ca3af';
+  }
+
+  if (titreInput) {
+    updateCount(titreInput, titreCount, 255);
+    titreInput.addEventListener('input', () => updateCount(titreInput, titreCount, 255));
+  }
+  if (contenuInput) {
+    updateCount(contenuInput, contenuCount, null);
+    contenuInput.addEventListener('input', () => updateCount(contenuInput, contenuCount, null));
+  }
+
+  /* Validation soumission */
+  form.addEventListener('submit', function (e) {
+    let valid = true;
+    const fields = [
+      { el: titreInput,   min: 5,  label: 'Le titre doit faire au moins 5 caractères.' },
+      { el: document.getElementById('af-desc'),    min: 10, label: 'La description doit faire au moins 10 caractères.' },
+      { el: contenuInput, min: 20, label: 'Le contenu doit faire au moins 20 caractères.' },
+    ];
+
+    fields.forEach(({ el, min, label }) => {
+      if (!el) return;
+      const wrap = el.closest('.au-field');
+      if (!wrap) return;
+      const len = el.value.trim().length;
+      if (len < min) {
+        wrap.classList.add('au-field-err');
+        let msg = wrap.querySelector('.au-field-msg');
+        if (!msg) { msg = document.createElement('span'); msg.className = 'au-field-msg'; wrap.appendChild(msg); }
+        msg.textContent = label;
+        valid = false;
+      } else {
+        wrap.classList.remove('au-field-err');
+        const msg = wrap.querySelector('.au-field-msg');
+        if (msg) msg.textContent = '';
+      }
+    });
+
+    // Catégories
+    const cats = form.querySelectorAll('input[name="categories[]"]:checked');
+    const catWrap = form.querySelector('.au-categ-list');
+    if (cats.length === 0) {
+      valid = false;
+      auShowToast('⚠️ Sélectionnez au moins une catégorie.');
+    } else if (cats.length > 5) {
+      valid = false;
+      auShowToast('⚠️ Maximum 5 catégories autorisées.');
+    }
+
+    if (!valid) {
+      e.preventDefault();
+      const firstErr = form.querySelector('.au-field-err');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    /* Feedback bouton */
+    const btn = document.getElementById('submitBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"
+             stroke-linecap="round" style="animation:spin .7s linear infinite">
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        Envoi en cours…`;
+    }
+  });
+})();
+
+/* ── CATÉGORIES TOGGLE ── */
+window.toggleCateg = function (input) {
+  const label = input.closest('.au-categ-item');
+  if (!label) return;
+  label.classList.toggle('checked', input.checked);
+};
+
+/* ── UPLOAD IMAGES PREVIEW ── */
+window.previewImages = function (input) {
+  const grid = document.getElementById('previewGrid');
+  if (!grid || !input.files) return;
+
+  Array.from(input.files).forEach((file, idx) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const div = document.createElement('div');
+      div.className = 'au-preview-item';
+      div.innerHTML = `
+        <img src="${e.target.result}" alt="${file.name}"/>
+        <button type="button" class="au-preview-remove" onclick="removePreview(this)">✕</button>
+      `;
+      grid.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+window.removePreview = function (btn) {
+  btn.closest('.au-preview-item').remove();
+};
+
+window.handleDrop = function (e) {
+  e.preventDefault();
+  const zone  = document.getElementById('uploadZone');
+  if (zone) zone.classList.remove('dragging');
+  const input = document.getElementById('af-images');
+  if (!input || !e.dataTransfer.files.length) return;
+  // Transférer les fichiers dans l'input (crée un DataTransfer)
+  const dt = new DataTransfer();
+  Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+  input.files = dt.files;
+  previewImages(input);
+};
+
+/* ── SCROLL FADE (auteur pages) ── */
+(function () {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: .08 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+})();
+
+/* ── MODALS COMMENTAIRES (partagé avec le layout lecteur) ── */
+/* openModal / closeModal / closeModalOutside / deleteComment déjà définis
+   dans la section lecteur du script — ils fonctionnent aussi côté auteur.
+   On réutilise signalCommentId pour le formulaire de signalement auteur. */
+(function () {
+  const openOrig = window.openModal;
+  window.openModal = function (id, commentId) {
+    // Mise à jour du champ caché dans la modale de signalement auteur
+    if (id === 'modalSignalComment') {
+      const field = document.getElementById('signalCommentId');
+      if (field && commentId != null) field.value = commentId;
+    }
+    if (typeof openOrig === 'function') openOrig(id, commentId);
+    else {
+      _pendingCommentId = commentId;
+      const el = document.getElementById(id);
+      if (el) el.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  };
+})();

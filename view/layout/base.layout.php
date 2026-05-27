@@ -28,6 +28,9 @@
       <a href="<?= path('lecteur','article') ?>" <?= ($currentAction ?? '') === 'article' ? 'class="active"' : '' ?>>Articles</a>
       <a href="<?= path('lecteur','categorie') ?>" <?= ($currentAction ?? '') === 'categorie' ? 'class="active"' : '' ?>>Catégorie</a>
       <a href="<?= path('lecteur','contact') ?>" <?= ($currentAction ?? '') === 'contact' ? 'class="active"' : '' ?>>Contact</a>
+      <?php if (isset($_SESSION['user']) && $_SESSION['user']['type'] === 'auteur'): ?>
+        <a href="<?= path('auteur', 'dashboard') ?>">Espace auteur</a>
+      <?php endif; ?>
     </div>
 
     <!--<div class="auth-wrap">
@@ -83,6 +86,38 @@
     </button>
   </div>
 </nav>
+<div class="mobile-drawer" id="mobileDrawer">
+    <?php if (isset($_SESSION['user'])): 
+        $user = $_SESSION['user'];
+        $initiales = strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1));
+    ?>
+        <div class="mobile-user-info">
+            <div class="mobile-user-avatar"><?= htmlspecialchars($initiales) ?></div>
+            <div class="mobile-user-name"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></div>
+            <div class="mobile-user-email"><?= htmlspecialchars($user['email']) ?></div>
+            <div class="mobile-user-badge <?= $user['type'] === 'auteur' ? 'badge-auteur' : 'badge-lecteur' ?>">
+                <?= $user['type'] === 'auteur' ? 'Auteur' : 'Lecteur' ?>
+            </div>
+        </div>
+        <?php if ($user['type'] === 'auteur'): ?>
+            <a href="<?= path('auteur', 'dashboard') ?>" class="mobile-drawer-link">Espace auteur</a>
+        <?php endif; ?>
+        <a href="<?= path('lecteur','home') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'home' ? 'active' : '' ?>">Accueil</a>
+        <a href="<?= path('lecteur','article') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'article' ? 'active' : '' ?>">Articles</a>
+        <a href="<?= path('lecteur','categorie') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'categorie' ? 'active' : '' ?>">Catégories</a>
+        <a href="<?= path('lecteur','contact') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'contact' ? 'active' : '' ?>">Contact</a>
+        <a href="<?= path('auth', 'logout') ?>" class="mobile-drawer-link logout">Se déconnecter</a>
+    <?php else: ?>
+        <a href="<?= path('lecteur','home') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'home' ? 'active' : '' ?>">Accueil</a>
+        <a href="<?= path('lecteur','article') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'article' ? 'active' : '' ?>">Articles</a>
+        <a href="<?= path('lecteur','categorie') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'categorie' ? 'active' : '' ?>">Catégories</a>
+        <a href="<?= path('lecteur','contact') ?>" class="mobile-drawer-link <?= ($currentAction ?? '') === 'contact' ? 'active' : '' ?>">Contact</a>
+        <div class="mobile-drawer-auth">
+            <a href="<?= path('auth', 'register') ?>" class="mobile-btn-s">S'inscrire</a>
+            <a href="<?= path('auth', 'login') ?>" class="mobile-btn-c">Se connecter</a>
+        </div>
+    <?php endif; ?>
+</div>
 
 <?= $content ?>
 <!-- ════════ FOOTER ════════ -->

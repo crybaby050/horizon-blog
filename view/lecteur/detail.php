@@ -153,7 +153,7 @@ $imgSim = function(array $art): string {
       </form>
       <?php else: ?>
         <div class="dc-login-notice">
-          <a href="<?= path('lecteur','home') ?>">Connectez-vous</a> pour laisser un commentaire.
+          <a href="<?= path('auth','login') ?>">Connectez-vous</a> pour laisser un commentaire.
         </div>
       <?php endif; ?>
 

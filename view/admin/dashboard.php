@@ -1,268 +1,215 @@
-<?php
-// Prépare les données du graphique pour JS
-$graphLabels = array_column($articlesParMois, 'mois');
-$graphData   = array_map('intval', array_column($articlesParMois, 'total'));
+<!-- ════════ DASHBOARD ADMIN ════════ -->
+<div class="adm-page">
 
-// Classes de statut
-$statutClass = [
-    'Actif'      => 'badge-actif',
-    'En attente' => 'badge-attente',
-    'Invalide'   => 'badge-invalide',
-    'Inactif'    => 'badge-inactif',
-];
-$statutLabel = [
-    'Actif'      => 'Publié',
-    'En attente' => 'En attente',
-    'Invalide'   => 'Invalide',
-    'Inactif'    => 'Supprimé',
-];
-?>
-
-<!-- ════════ DASHBOARD ════════ -->
-
-<!-- Alertes rapides -->
-<?php if ($nbArticlesEnAttente > 0 || $nbDemandesEnAttente > 0 || $nbSignalementsNonTraites > 0): ?>
-<div class="admin-alerts-row">
-  <?php if ($nbArticlesEnAttente > 0): ?>
-  <a href="<?= path('admin','article',['statut'=>'En attente']) ?>" class="admin-alert-pill admin-alert-warn">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <?= $nbArticlesEnAttente ?> article<?= $nbArticlesEnAttente > 1 ? 's' : '' ?> en attente de validation
-  </a>
-  <?php endif; ?>
-  <?php if ($nbDemandesEnAttente > 0): ?>
-  <a href="<?= path('admin','auteur',['vue'=>'demandes']) ?>" class="admin-alert-pill admin-alert-info">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    <?= $nbDemandesEnAttente ?> demande<?= $nbDemandesEnAttente > 1 ? 's' : '' ?> auteur en attente
-  </a>
-  <?php endif; ?>
-  <?php if ($nbSignalementsNonTraites > 0): ?>
-  <a href="<?= path('admin','signalement') ?>" class="admin-alert-pill admin-alert-danger">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-    <?= $nbSignalementsNonTraites ?> signalement<?= $nbSignalementsNonTraites > 1 ? 's' : '' ?> non traité<?= $nbSignalementsNonTraites > 1 ? 's' : '' ?>
-  </a>
-  <?php endif; ?>
-</div>
-<?php endif; ?>
-
-<!-- Cartes statistiques -->
-<div class="admin-stats-grid">
-
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#e6f7ee;color:#1a9e5c">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= number_format($stats['articles']) ?></div>
-      <div class="admin-stat-label">Articles total</div>
-    </div>
-    <div class="admin-stat-sub">
-      <span class="badge-attente" style="font-size:.7rem;padding:2px 8px"><?= $statsStatuts['En attente'] ?> en attente</span>
+  <div class="adm-welcome fade-up">
+    <div>
+      <h1 class="adm-welcome-title">
+        Bonjour, <?= htmlspecialchars($_SESSION['admin']['prenom'] ?? 'Admin') ?> 👋
+      </h1>
+      <p class="adm-welcome-sub">Vue d'ensemble de la plateforme HorizonBlog.</p>
     </div>
   </div>
 
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#eef2ff;color:#4f6ef7">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  <!-- ── STAT CARDS ── -->
+  <div class="adm-stat-grid fade-up" style="transition-delay:.05s">
+
+    <div class="adm-stat-card">
+      <div class="adm-stat-icon" style="background:#e6f7ee;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="22" height="22" stroke="#1a9e5c">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      </div>
+      <div class="adm-stat-info">
+        <div class="adm-stat-num"><?= $stats['nb_articles'] ?? 0 ?></div>
+        <div class="adm-stat-label">Articles total</div>
+      </div>
+      <div class="adm-stat-sub">
+        <span class="adm-badge-green"><?= $stats['articles_actifs'] ?? 0 ?> actifs</span>
+        <span class="adm-badge-orange"><?= $stats['articles_attente'] ?? 0 ?> en attente</span>
+      </div>
     </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= number_format($stats['auteurs']) ?></div>
-      <div class="admin-stat-label">Auteurs</div>
+
+    <div class="adm-stat-card">
+      <div class="adm-stat-icon" style="background:#eef2ff;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="22" height="22" stroke="#4f6ef7">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="adm-stat-info">
+        <div class="adm-stat-num"><?= $stats['nb_auteurs'] ?? 0 ?></div>
+        <div class="adm-stat-label">Auteurs</div>
+      </div>
+      <div class="adm-stat-sub">
+        <span class="adm-badge-green"><?= $stats['auteurs_actifs'] ?? 0 ?> actifs</span>
+      </div>
     </div>
-    <div class="admin-stat-sub">
-      <span style="font-size:.75rem;color:var(--admin-gray)"><?= $nbDemandesEnAttente ?> demande<?= $nbDemandesEnAttente > 1 ? 's' : '' ?></span>
+
+    <div class="adm-stat-card">
+      <div class="adm-stat-icon" style="background:#fff7ed;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="22" height="22" stroke="#f97316">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="adm-stat-info">
+        <div class="adm-stat-num"><?= $stats['nb_lecteurs'] ?? 0 ?></div>
+        <div class="adm-stat-label">Lecteurs</div>
+      </div>
+      <div class="adm-stat-sub">
+        <span class="adm-badge-green"><?= $stats['lecteurs_actifs'] ?? 0 ?> actifs</span>
+      </div>
     </div>
+
+    <div class="adm-stat-card">
+      <div class="adm-stat-icon" style="background:#fef2f2;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="22" height="22" stroke="#ef4444">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+          <line x1="4" y1="22" x2="4" y2="15"/>
+        </svg>
+      </div>
+      <div class="adm-stat-info">
+        <div class="adm-stat-num"><?= $stats['nb_signalements'] ?? 0 ?></div>
+        <div class="adm-stat-label">Signalements</div>
+      </div>
+      <div class="adm-stat-sub">
+        <span class="adm-badge-red"><?= $stats['signalements_attente'] ?? 0 ?> non traités</span>
+      </div>
+    </div>
+
   </div>
 
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#fff7ed;color:#f97316">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= number_format($stats['lecteurs']) ?></div>
-      <div class="admin-stat-label">Lecteurs</div>
-    </div>
-  </div>
+  <!-- ── GRAPHIQUE + SIGNALEMENTS ── -->
+  <div class="adm-dash-grid fade-up" style="transition-delay:.1s">
 
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#fef2f2;color:#ef4444">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-    </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= number_format($stats['signalements']) ?></div>
-      <div class="admin-stat-label">Signalements</div>
-    </div>
-    <div class="admin-stat-sub">
-      <span style="font-size:.75rem;color:#ef4444"><?= $nbSignalementsNonTraites ?> non traité<?= $nbSignalementsNonTraites > 1 ? 's' : '' ?></span>
-    </div>
-  </div>
-
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#f0fdf4;color:#16a34a">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= number_format($stats['commentaires']) ?></div>
-      <div class="admin-stat-label">Commentaires</div>
-    </div>
-  </div>
-
-  <div class="admin-stat-card">
-    <div class="admin-stat-icon" style="background:#faf5ff;color:#9333ea">
-      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    </div>
-    <div class="admin-stat-info">
-      <div class="admin-stat-value"><?= $statsStatuts['Actif'] ?></div>
-      <div class="admin-stat-label">Articles publiés</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Graphique + derniers articles -->
-<div class="admin-dashboard-grid">
-
-  <!-- Graphique articles par mois -->
-  <div class="admin-card admin-card-chart">
-    <div class="admin-card-header">
-      <div class="admin-card-title">Articles publiés par mois</div>
-      <span class="admin-card-sub">12 derniers mois</span>
-    </div>
-    <div class="admin-chart-wrap">
-      <canvas id="articlesChart" height="260"></canvas>
-    </div>
-  </div>
-
-  <!-- Répartition statuts -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">Répartition des articles</div>
-    </div>
-    <div class="admin-statut-bars">
-      <?php
-        $total = max(1, array_sum($statsStatuts));
-        $barColors = [
-          'Actif'      => '#1a9e5c',
-          'En attente' => '#f59e0b',
-          'Invalide'   => '#ef4444',
-          'Inactif'    => '#9ca3af',
-        ];
-        $barLabels = [
-          'Actif'      => 'Publiés',
-          'En attente' => 'En attente',
-          'Invalide'   => 'Invalides',
-          'Inactif'    => 'Supprimés',
-        ];
-        foreach ($statsStatuts as $statut => $count):
-          $pct = round($count / $total * 100);
-          $color = $barColors[$statut] ?? '#9ca3af';
-          $label = $barLabels[$statut] ?? $statut;
-      ?>
-      <div class="admin-statut-bar-item">
-        <div class="admin-statut-bar-meta">
-          <span class="admin-statut-bar-label"><?= $label ?></span>
-          <span class="admin-statut-bar-count"><?= $count ?> <small>(<?= $pct ?>%)</small></span>
-        </div>
-        <div class="admin-statut-bar-track">
-          <div class="admin-statut-bar-fill" style="width:<?= $pct ?>%;background:<?= $color ?>"></div>
+    <!-- Graphique -->
+    <div class="adm-card">
+      <div class="adm-card-header">
+        <div>
+          <div class="adm-card-title">Articles par mois</div>
+          <div class="adm-card-sub">12 derniers mois</div>
         </div>
       </div>
-      <?php endforeach; ?>
+      <div style="position:relative;height:220px;">
+        <canvas id="admChart"></canvas>
+      </div>
     </div>
+
+    <!-- Signalements récents -->
+    <div class="adm-card">
+      <div class="adm-card-header">
+        <div class="adm-card-title">Signalements récents</div>
+        <a href="<?= path('admin','signalements') ?>" class="adm-card-link">Voir tout →</a>
+      </div>
+      <?php if (empty($derniersSignal)): ?>
+        <p class="adm-empty-txt">Aucun signalement.</p>
+      <?php else: ?>
+        <?php foreach ($derniersSignal as $sig):
+          $isTraite = $sig['statut'] === 'Traiter';
+        ?>
+        <div class="adm-signal-item">
+          <div class="adm-signal-icon <?= $isTraite ? 'adm-signal-ok' : 'adm-signal-warn' ?>">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+          </div>
+          <div class="adm-signal-info">
+            <div class="adm-signal-title"><?= htmlspecialchars($sig['libelle']) ?></div>
+            <div class="adm-signal-meta">
+              Par <?= htmlspecialchars($sig['signaleur']) ?> ·
+              <?= date('d/m/Y', strtotime($sig['date_creation'])) ?>
+            </div>
+          </div>
+          <span class="adm-status-chip <?= $isTraite ? 'adm-status-actif' : 'adm-status-attente' ?>">
+            <?= $isTraite ? 'Traité' : 'En attente' ?>
+          </span>
+        </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+
   </div>
 
-</div>
-
-<!-- Derniers articles + signalements -->
-<div class="admin-dashboard-grid">
-
-  <!-- Derniers articles -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">Derniers articles</div>
-      <a href="<?= path('admin','article') ?>" class="admin-card-link">Voir tout</a>
+  <!-- ── DERNIERS ARTICLES ── -->
+  <div class="adm-card fade-up" style="transition-delay:.15s">
+    <div class="adm-card-header">
+      <div class="adm-card-title">Derniers articles</div>
+      <a href="<?= path('admin','articles') ?>" class="adm-card-link">Voir tout →</a>
     </div>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Titre</th>
-          <th>Auteur</th>
-          <th>Date</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($derniersArticles)): ?>
-          <tr><td colspan="4" class="admin-table-empty">Aucun article.</td></tr>
-        <?php else: ?>
-          <?php foreach ($derniersArticles as $art): ?>
+    <div class="adm-table-wrap">
+      <table class="adm-table">
+        <thead>
           <tr>
-            <td class="admin-table-title">
-              <a href="<?= path('admin','article',['detail'=>$art['id']]) ?>">
-                <?= htmlspecialchars(mb_strimwidth($art['libelle'], 0, 40, '…')) ?>
-              </a>
+            <th>Article</th>
+            <th>Auteur</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($derniersArts as $art):
+            $sc = match($art['statut']) {
+              'Actif'      => 'adm-status-actif',
+              'En attente' => 'adm-status-attente',
+              'Invalide'   => 'adm-status-invalide',
+              default      => 'adm-status-actif'
+            };
+          ?>
+          <tr>
+            <td>
+              <div class="adm-table-art">
+                <div class="adm-table-art-img">
+                  <img src="<?= !empty($art['image_p']) ? htmlspecialchars($art['image_p']) : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=100&q=60' ?>" alt=""/>
+                </div>
+                <span><?= htmlspecialchars(strlen($art['libelle']) > 45 ? substr($art['libelle'],0,45).'…' : $art['libelle']) ?></span>
+              </div>
             </td>
-            <td><?= htmlspecialchars($art['auteur'] ?? '—') ?></td>
+            <td><?= htmlspecialchars($art['auteur']) ?></td>
             <td><?= date('d/m/Y', strtotime($art['date_creation'])) ?></td>
+            <td><span class="adm-status-chip <?= $sc ?>"><?= $art['statut'] ?></span></td>
             <td>
-              <span class="admin-badge <?= $statutClass[$art['statut']] ?? '' ?>">
-                <?= $statutLabel[$art['statut']] ?? $art['statut'] ?>
-              </span>
+              <div class="adm-table-actions">
+                <a href="<?= path('admin','article_detail',['id'=>$art['id']]) ?>" class="adm-tbl-btn adm-tbl-view">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13">
+                    <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                <?php if ($art['statut'] !== 'Actif'): ?>
+                <form method="POST" action="<?= path('admin','articles') ?>" style="display:inline">
+                  <input type="hidden" name="post_action"  value="valider"/>
+                  <input type="hidden" name="article_id"   value="<?= $art['id'] ?>"/>
+                  <button type="submit" class="adm-tbl-btn adm-tbl-ok" title="Valider">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="13" height="13">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </button>
+                </form>
+                <?php endif; ?>
+                <?php if ($art['statut'] !== 'Invalide'): ?>
+                <form method="POST" action="<?= path('admin','articles') ?>" style="display:inline">
+                  <input type="hidden" name="post_action"  value="invalider"/>
+                  <input type="hidden" name="article_id"   value="<?= $art['id'] ?>"/>
+                  <button type="submit" class="adm-tbl-btn adm-tbl-warn" title="Invalider">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="13" height="13">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </form>
+                <?php endif; ?>
+              </div>
             </td>
           </tr>
           <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Derniers signalements -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">Derniers signalements</div>
-      <a href="<?= path('admin','signalement') ?>" class="admin-card-link">Voir tout</a>
+        </tbody>
+      </table>
     </div>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Raison</th>
-          <th>Cible</th>
-          <th>Date</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($derniersSignalements)): ?>
-          <tr><td colspan="4" class="admin-table-empty">Aucun signalement.</td></tr>
-        <?php else: ?>
-          <?php foreach ($derniersSignalements as $sig): ?>
-          <tr>
-            <td><?= htmlspecialchars(mb_strimwidth($sig['libelle'], 0, 30, '…')) ?></td>
-            <td>
-              <?php if ($sig['article_id']): ?>
-                <a href="<?= path('admin','article',['detail'=>$sig['article_id']]) ?>">Article #<?= $sig['article_id'] ?></a>
-              <?php else: ?>
-                Commentaire #<?= $sig['commentaire_id'] ?>
-              <?php endif; ?>
-            </td>
-            <td><?= date('d/m/Y', strtotime($sig['date_creation'])) ?></td>
-            <td>
-              <span class="admin-badge <?= $sig['statut'] === 'Non traiter' ? 'badge-attente' : 'badge-actif' ?>">
-                <?= $sig['statut'] === 'Non traiter' ? 'Non traité' : 'Traité' ?>
-              </span>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
   </div>
 
 </div>
 
-<!-- Données graphique injectées pour admin.js -->
-<script>
-window.adminChartData = {
-  labels : <?= json_encode($graphLabels) ?>,
-  data   : <?= json_encode($graphData) ?>
-};
-</script>
+<script>window.admChartData = <?= json_encode($chartData) ?>;</script>

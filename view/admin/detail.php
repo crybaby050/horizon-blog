@@ -1,210 +1,207 @@
-<?php
-$statutClass = [
-    'Actif'      => 'badge-actif',
-    'En attente' => 'badge-attente',
-    'Invalide'   => 'badge-invalide',
-    'Inactif'    => 'badge-inactif',
-];
-$statutLabel = [
-    'Actif'      => 'Publié',
-    'En attente' => 'En attente',
-    'Invalide'   => 'Invalide',
-    'Inactif'    => 'Supprimé',
-];
-$img = !empty($article['image_p']) ? htmlspecialchars($article['image_p'])
-     : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=900&q=80';
-$redirectList = path('admin','article');
-?>
+<!-- ════════ DETAIL ARTICLE ADMIN ════════ -->
+<div class="adm-page">
 
-<!-- Breadcrumb -->
-<div class="admin-breadcrumb">
-  <a href="<?= path('admin','article') ?>">Articles</a>
-  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
-  <span><?= htmlspecialchars(mb_strimwidth($article['libelle'], 0, 50, '…')) ?></span>
-</div>
-
-<div class="admin-detail-layout">
-
-  <!-- Colonne principale -->
-  <div class="admin-detail-main">
-
-    <!-- Image -->
-    <div class="admin-detail-cover">
-      <img src="<?= $img ?>" alt="<?= htmlspecialchars($article['libelle']) ?>"/>
-      <span class="admin-badge <?= $statutClass[$article['statut']] ?? '' ?>" style="position:absolute;top:16px;right:16px;font-size:.8rem">
-        <?= $statutLabel[$article['statut']] ?? $article['statut'] ?>
-      </span>
+  <div class="adm-page-header fade-up">
+    <div class="adm-breadcrumb">
+      <a href="<?= path('admin','articles') ?>">Articles</a>
+      <span>›</span>
+      <span><?= htmlspecialchars(strlen($article['libelle']) > 50 ? substr($article['libelle'],0,50).'…' : $article['libelle']) ?></span>
     </div>
-
-    <!-- Infos -->
-    <div class="admin-card" style="margin-top:20px">
-      <div class="admin-card-header">
-        <div>
-          <div class="admin-detail-cats">
-            <?php foreach ($categories as $cat): ?>
-              <span class="admin-tag"><?= htmlspecialchars($cat['libelle']) ?></span>
-            <?php endforeach; ?>
-          </div>
-          <h2 class="admin-detail-title"><?= htmlspecialchars($article['libelle']) ?></h2>
-          <p class="admin-detail-desc"><?= htmlspecialchars($article['description'] ?? '') ?></p>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="admin-detail-actions">
-        <?php if ($article['statut'] === 'En attente'): ?>
-        <form method="POST" action="<?= path('admin','article') ?>" style="display:inline">
-          <input type="hidden" name="controller" value="admin"/>
-          <input type="hidden" name="action" value="article"/>
-          <input type="hidden" name="post_action" value="approuver"/>
-          <input type="hidden" name="id" value="<?= $article['id'] ?>"/>
-          <input type="hidden" name="redirect" value="<?= $redirectList ?>"/>
-          <button type="submit" class="admin-btn admin-btn-ok">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Approuver
+    <div class="adm-page-header-actions">
+      <?php if ($article['statut'] !== 'Actif'): ?>
+        <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>" style="display:inline">
+          <input type="hidden" name="post_action" value="valider"/>
+          <button type="submit" class="adm-btn-success">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            Valider
           </button>
         </form>
-        <form method="POST" action="<?= path('admin','article') ?>" style="display:inline">
-          <input type="hidden" name="controller" value="admin"/>
-          <input type="hidden" name="action" value="article"/>
+      <?php endif; ?>
+      <?php if ($article['statut'] !== 'Invalide'): ?>
+        <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>" style="display:inline">
           <input type="hidden" name="post_action" value="invalider"/>
-          <input type="hidden" name="id" value="<?= $article['id'] ?>"/>
-          <input type="hidden" name="redirect" value="<?= $redirectList ?>"/>
-          <button type="submit" class="admin-btn admin-btn-warn">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button type="submit" class="adm-btn-warning">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Invalider
           </button>
         </form>
-        <?php endif; ?>
-
-        <?php if ($article['statut'] === 'Inactif'): ?>
-        <form method="POST" action="<?= path('admin','article') ?>" style="display:inline">
-          <input type="hidden" name="controller" value="admin"/>
-          <input type="hidden" name="action" value="article"/>
-          <input type="hidden" name="post_action" value="restaurer"/>
-          <input type="hidden" name="id" value="<?= $article['id'] ?>"/>
-          <input type="hidden" name="redirect" value="<?= $redirectList ?>"/>
-          <button type="submit" class="admin-btn admin-btn-ok">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-            Restaurer
-          </button>
-        </form>
-        <?php endif; ?>
-
-        <?php if ($article['statut'] !== 'Inactif'): ?>
-        <form method="POST" action="<?= path('admin','article') ?>" style="display:inline"
-              onsubmit="return confirm('Supprimer cet article ?')">
-          <input type="hidden" name="controller" value="admin"/>
-          <input type="hidden" name="action" value="article"/>
-          <input type="hidden" name="post_action" value="supprimer"/>
-          <input type="hidden" name="id" value="<?= $article['id'] ?>"/>
-          <input type="hidden" name="redirect" value="<?= $redirectList ?>"/>
-          <button type="submit" class="admin-btn admin-btn-danger">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            Supprimer
-          </button>
-        </form>
-        <?php endif; ?>
-
-        <a href="<?= path('lecteur','detail',['id'=>$article['id']]) ?>" target="_blank" class="admin-btn admin-btn-ghost">
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Voir sur le site
-        </a>
-      </div>
-
-      <!-- Corps -->
-      <?php if (!empty($article['contenu'])): ?>
-      <div class="admin-detail-body">
-        <?= $article['contenu'] ?>
-      </div>
       <?php endif; ?>
+      <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>" style="display:inline"
+            onsubmit="return confirm('Supprimer définitivement cet article ?')">
+        <input type="hidden" name="post_action" value="supprimer_article"/>
+        <button type="submit" class="adm-btn-danger">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Supprimer
+        </button>
+      </form>
     </div>
+  </div>
 
-    <!-- Commentaires -->
-    <div class="admin-card" style="margin-top:20px">
-      <div class="admin-card-header">
-        <div class="admin-card-title">Commentaires (<?= count($commentaires) ?>)</div>
+  <div class="adm-detail-layout fade-up">
+
+    <!-- ── CONTENU ── -->
+    <main class="adm-detail-main">
+
+      <!-- Statut + infos -->
+      <div class="adm-detail-status-bar">
+        <?php
+          $sc = match($article['statut']) {
+            'Actif'      => 'adm-status-actif',
+            'En attente' => 'adm-status-attente',
+            'Invalide'   => 'adm-status-invalide',
+            default      => 'adm-status-actif'
+          };
+        ?>
+        <span class="adm-status-chip <?= $sc ?>"><?= $article['statut'] ?></span>
+        <span class="adm-detail-date">Créé le <?= date('d/m/Y à H:i', strtotime($article['date_creation'])) ?></span>
+        <span class="adm-detail-date">Par <strong><?= htmlspecialchars($article['auteur']) ?></strong></span>
       </div>
-      <?php if (empty($commentaires)): ?>
-        <p class="admin-table-empty">Aucun commentaire.</p>
-      <?php else: ?>
-      <div class="admin-comments-list">
-        <?php foreach ($commentaires as $com): ?>
-        <div class="admin-comment-item">
-          <div class="admin-comment-header">
-            <div class="admin-comment-meta">
-              <span class="admin-comment-author"><?= htmlspecialchars($com['auteur_nom']) ?></span>
-              <span class="admin-comment-type"><?= $com['type_user'] === 'auteur' ? 'Auteur' : 'Lecteur' ?></span>
-              <span class="admin-comment-date"><?= date('d/m/Y H:i', strtotime($com['date'])) ?></span>
-            </div>
-            <form method="POST" action="<?= path('admin','article') ?>"
-                  onsubmit="return confirm('Supprimer ce commentaire ?')">
-              <input type="hidden" name="controller" value="admin"/>
-              <input type="hidden" name="action" value="article"/>
-              <input type="hidden" name="post_action" value="supprimer_commentaire"/>
-              <input type="hidden" name="id" value="<?= $com['id'] ?>"/>
-              <input type="hidden" name="redirect" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>"/>
-              <button type="submit" class="admin-action-btn admin-action-danger" title="Supprimer ce commentaire">
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-              </button>
-            </form>
-          </div>
-          <p class="admin-comment-text"><?= nl2br(htmlspecialchars($com['contenue'])) ?></p>
-        </div>
+
+      <!-- Tags catégories -->
+      <div class="adm-detail-tags">
+        <?php foreach ($categories as $i => $cat): ?>
+          <span class="detail-tag <?= $i===0?'detail-tag-primary':'detail-tag-sec' ?>"><?= htmlspecialchars($cat['libelle']) ?></span>
         <?php endforeach; ?>
       </div>
+
+      <!-- Titre -->
+      <h1 class="adm-detail-title"><?= htmlspecialchars($article['libelle']) ?></h1>
+      <p class="adm-detail-subtitle"><?= htmlspecialchars($article['description']) ?></p>
+
+      <!-- Image -->
+      <?php if (!empty($article['image_p'])): ?>
+      <div class="adm-detail-cover">
+        <img src="<?= htmlspecialchars($article['image_p']) ?>" alt=""/>
+      </div>
       <?php endif; ?>
-    </div>
 
-  </div>
+      <!-- Contenu -->
+      <div class="adm-detail-body">
+        <?= $article['contenu'] ?? '<p>Aucun contenu.</p>' ?>
+      </div>
 
-  <!-- Sidebar -->
-  <div class="admin-detail-sidebar">
-    <div class="admin-card">
-      <div class="admin-card-title" style="margin-bottom:16px">Informations</div>
-      <ul class="admin-info-list">
-        <li>
-          <span class="admin-info-label">Statut</span>
-          <span class="admin-badge <?= $statutClass[$article['statut']] ?? '' ?>">
-            <?= $statutLabel[$article['statut']] ?? $article['statut'] ?>
-          </span>
-        </li>
-        <li>
-          <span class="admin-info-label">Auteur</span>
-          <?php if ($article['auteur_id']): ?>
-            <a href="<?= path('admin','auteur',['detail'=>$article['auteur_id']]) ?>" class="admin-table-link">
-              <?= htmlspecialchars($article['auteur'] ?? '—') ?>
-            </a>
+      <hr class="adm-detail-divider"/>
+
+      <!-- ══ COMMENTAIRES ══ -->
+      <div id="commentsSection">
+        <div class="dc-header">
+          <h2>Commentaires <span class="dc-count"><?= $nbCommentaires ?></span></h2>
+        </div>
+
+        <div class="dc-list">
+          <?php if (empty($commentaires)): ?>
+            <p style="color:var(--gray);text-align:center;padding:32px 0;">Aucun commentaire.</p>
           <?php else: ?>
-            <span>—</span>
-          <?php endif; ?>
-        </li>
-        <li>
-          <span class="admin-info-label">Email auteur</span>
-          <span><?= htmlspecialchars($article['auteur_email'] ?? '—') ?></span>
-        </li>
-        <li>
-          <span class="admin-info-label">Créé le</span>
-          <span><?= date('d/m/Y à H:i', strtotime($article['date_creation'])) ?></span>
-        </li>
-        <li>
-          <span class="admin-info-label">Modifié le</span>
-          <span><?= date('d/m/Y à H:i', strtotime($article['date_dernier_modification'])) ?></span>
-        </li>
-        <li>
-          <span class="admin-info-label">Catégories</span>
-          <div class="admin-tags-wrap" style="margin-top:4px">
-            <?php foreach ($categories as $cat): ?>
-              <span class="admin-tag"><?= htmlspecialchars($cat['libelle']) ?></span>
+            <?php foreach ($commentaires as $com):
+              $nomCom  = $com['nom_complet'] ?? 'Inconnu';
+              $parts   = explode(' ', $nomCom);
+              $initCom = strtoupper(substr($parts[0],0,1).(isset($parts[1])?substr($parts[1],0,1):''));
+              $isAuteur = $com['type_user'] === 'auteur';
+              $styleAv  = $isAuteur
+                  ? 'background:#e8f7f0;color:#0f6e40'
+                  : 'background:#e8f0fe;color:#1a56db';
+            ?>
+            <div class="dc-item" id="comment-<?= $com['id'] ?>">
+              <div class="dc-item-avatar" style="<?= $styleAv ?>"><?= $initCom ?></div>
+              <div class="dc-item-body">
+                <div class="dc-item-header">
+                  <div>
+                    <span class="dc-item-name"><?= htmlspecialchars($nomCom) ?></span>
+                    <span class="dc-item-badge <?= $isAuteur?'':'dc-item-badge-lecteur' ?>"><?= $isAuteur?'Auteur':'Lecteur' ?></span>
+                    <span class="dc-item-date"><?= date('d/m/Y à H:i', strtotime($com['date'])) ?></span>
+                  </div>
+                  <div class="dc-item-actions">
+                    <form method="POST"
+                          action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>"
+                          style="display:inline"
+                          onsubmit="return confirm('Supprimer ce commentaire ?')">
+                      <input type="hidden" name="post_action"  value="supprimer_commentaire"/>
+                      <input type="hidden" name="comment_id"   value="<?= $com['id'] ?>"/>
+                      <button type="submit" class="dc-action-btn dc-delete-btn" title="Supprimer">
+                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        </svg>
+                        Supprimer
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <div class="dc-item-text"><?= nl2br(htmlspecialchars($com['contenue'])) ?></div>
+              </div>
+            </div>
             <?php endforeach; ?>
-          </div>
-        </li>
-        <li>
-          <span class="admin-info-label">Commentaires</span>
-          <span><?= count($commentaires) ?></span>
-        </li>
-      </ul>
-    </div>
-  </div>
+          <?php endif; ?>
+        </div>
+      </div>
 
+    </main>
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="adm-detail-sidebar">
+
+      <!-- Actions -->
+      <div class="adm-detail-scard">
+        <div class="ds-label">Actions rapides</div>
+        <div class="adm-detail-actions">
+          <?php if ($article['statut'] !== 'Actif'): ?>
+          <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>">
+            <input type="hidden" name="post_action" value="valider"/>
+            <button type="submit" class="adm-detail-action-btn adm-detail-action-ok">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>
+              Valider l'article
+            </button>
+          </form>
+          <?php endif; ?>
+          <?php if ($article['statut'] !== 'Invalide'): ?>
+          <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>">
+            <input type="hidden" name="post_action" value="invalider"/>
+            <button type="submit" class="adm-detail-action-btn adm-detail-action-warn">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Invalider
+            </button>
+          </form>
+          <?php endif; ?>
+          <form method="POST" action="<?= path('admin','article_detail',['id'=>$article['id']]) ?>"
+                onsubmit="return confirm('Supprimer définitivement ?')">
+            <input type="hidden" name="post_action" value="supprimer_article"/>
+            <button type="submit" class="adm-detail-action-btn adm-detail-action-del">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Supprimer
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="adm-detail-scard">
+        <div class="ds-label">Informations</div>
+        <div class="adm-detail-info-list">
+          <div class="adm-detail-info-item">
+            <span class="adm-detail-info-label">Auteur</span>
+            <span class="adm-detail-info-val"><?= htmlspecialchars($article['auteur']) ?></span>
+          </div>
+          <div class="adm-detail-info-item">
+            <span class="adm-detail-info-label">Commentaires</span>
+            <span class="adm-detail-info-val"><?= $nbCommentaires ?></span>
+          </div>
+          <div class="adm-detail-info-item">
+            <span class="adm-detail-info-label">Créé le</span>
+            <span class="adm-detail-info-val"><?= date('d/m/Y', strtotime($article['date_creation'])) ?></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catégories -->
+      <div class="adm-detail-scard">
+        <div class="ds-label">Catégories</div>
+        <div class="ds-categ-chips">
+          <?php foreach ($categories as $cat): ?>
+            <span class="ds-chip ds-chip-active"><?= htmlspecialchars($cat['libelle']) ?></span>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
+    </aside>
+  </div>
 </div>

@@ -750,3 +750,175 @@ window.handleDrop = function (e) {
     }
   };
 })();
+
+
+
+/* ════════════════════════════════════════════════════
+   ESPACE ADMIN — à ajouter à la fin de script.js
+   ════════════════════════════════════════════════════ */
+
+/* ── SIDEBAR MOBILE ADMIN ── */
+window.admToggleSidebar = function () {
+  const sidebar  = document.getElementById('admSidebar');
+  const overlay  = document.getElementById('admOverlay');
+  const burger   = document.getElementById('admHamburger');
+  if (!sidebar) return;
+  sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('open');
+  if (burger)  burger.classList.toggle('open');
+  document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+};
+
+/* ── TOAST ADMIN ── */
+function admShowToast(msg, duration = 2800) {
+  const t = document.getElementById('admToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ── MODAL SUPPRESSION ARTICLE ── */
+window.admOpenDelete = function (type, id, name) {
+  const overlay  = document.getElementById('admDeleteModal');
+  const idInput  = document.getElementById('admDeleteId');
+  const nameEl   = document.getElementById('admDeleteName');
+  if (!overlay) return;
+  if (idInput)  idInput.value = id;
+  if (nameEl)   nameEl.textContent = '"' + name + '"';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.admCloseDelete = function () {
+  const overlay = document.getElementById('admDeleteModal');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+/* ── MODAL SUPPRESSION AUTEUR ── */
+window.admOpenDeleteUser = function (type, id, name) {
+  const overlay = document.getElementById('admDeleteUserModal');
+  const idInput = document.getElementById('admDeleteUserId');
+  const nameEl  = document.getElementById('admDeleteUserName');
+  if (!overlay) return;
+  if (idInput)  idInput.value = id;
+  if (nameEl)   nameEl.textContent = name;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.admCloseDeleteUser = function () {
+  const overlay = document.getElementById('admDeleteUserModal');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+/* ── MODAL SUPPRESSION LECTEUR ── */
+window.admOpenDeleteLecteur = function (id, name) {
+  const overlay = document.getElementById('admDeleteLecteurModal');
+  const idInput = document.getElementById('admDeleteLecteurId');
+  const nameEl  = document.getElementById('admDeleteLecteurName');
+  if (!overlay) return;
+  if (idInput)  idInput.value = id;
+  if (nameEl)   nameEl.textContent = name;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.admCloseDeleteLecteur = function () {
+  const overlay = document.getElementById('admDeleteLecteurModal');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+/* Fermer les modals en cliquant sur l'overlay */
+document.addEventListener('DOMContentLoaded', function () {
+  ['admDeleteModal','admDeleteUserModal','admDeleteLecteurModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', function (e) {
+        if (e.target === el) {
+          el.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  });
+
+  /* Scroll fade pour les pages admin */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: .08 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+});
+
+/* ── GRAPHIQUE DASHBOARD ADMIN ── */
+(function () {
+  if (typeof window.admChartData === 'undefined') return;
+  if (!document.getElementById('admChart')) return;
+
+  // Charger Chart.js dynamiquement si pas déjà chargé
+  function renderAdmChart() {
+    const data   = window.admChartData;
+    const labels = data.map(d => d.mois);
+    const values = data.map(d => parseInt(d.nb_articles) || 0);
+
+    const ctx = document.getElementById('admChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Articles',
+          data: values,
+          backgroundColor: 'rgba(26,158,92,.15)',
+          borderColor: '#1a9e5c',
+          borderWidth: 2,
+          borderRadius: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1f2937',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,.8)',
+            padding: 12,
+            borderRadius: 10,
+            callbacks: {
+              label: ctx => 'Articles : ' + ctx.parsed.y,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
+          },
+          y: {
+            grid: { color: '#f0f0f0' },
+            ticks: {
+              font: { family: 'Poppins', size: 11 }, color: '#6b7280',
+              stepSize: 1,
+            },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+
+  // Chart.js déjà chargé par le dashboard auteur ?
+  if (typeof Chart !== 'undefined') {
+    renderAdmChart();
+  } else {
+    const script  = document.createElement('script');
+    script.src    = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+    script.onload = renderAdmChart;
+    document.head.appendChild(script);
+  }
+})();

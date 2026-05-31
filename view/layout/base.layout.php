@@ -33,7 +33,7 @@
       <?php endif; ?>
     </div>
 
-    <!--<div class="auth-wrap">
+    <!--<div class="nav-auth-wrap">
       <div class="auth-fused">
         <button class="btn-s">S'inscrire</button>
         <button class="btn-c">Se Connecter</button>
@@ -41,7 +41,7 @@
     </div>-->
 
 
-<div class="auth-wrap">
+<div class="nav-auth-wrap">
     <?php if (isset($_SESSION['user'])): 
         $user = $_SESSION['user'];
         $initiales = strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1));

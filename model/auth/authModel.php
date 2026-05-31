@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT."config/config.php";
 /**
  * Vérifie si un email existe déjà dans la table lecteur ou auteur
  */
@@ -16,21 +16,22 @@ function emailExists(string $email): bool {
 /**
  * Inscrit un nouveau lecteur
  */
-function registerLecteur(string $nom, string $prenom, string $email, string $motDePasse): bool {
-    $sql = "INSERT INTO lecteur (nom, prenom, email, mot_de_passe, statut, date_inscription, admin)
-            VALUES (:nom, :prenom, :email, :mdp, 'Actif', NOW(), 0)";
+function registerLecteur(string $nom, string $prenom, string $email, string $mot_de_passe): bool {
+    $sql = "INSERT INTO lecteur (nom, prenom, email, mot_de_passe, statut, admin)
+            VALUES (:nom, :prenom, :email, :mot_de_passe, 'Actif', 1)";
     
     try {
         executeUpdate($sql, [
             ':nom'   => $nom,
             ':prenom'=> $prenom,
             ':email' => $email,
-            ':mdp'   => $motDePasse
+            ':mot_de_passe'=> $mot_de_passe
         ]);
         return true;
-    } catch (PDOException $e) {
-        return false;
-    }
+    } catch (Exception $e) {
+    var_dump($e->getMessage());
+    return false;
+}
 }
 
 /**

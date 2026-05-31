@@ -1,21 +1,100 @@
-/* ── HERO SLIDER ─────────────────────────────────────
-   Dépend de `window.heroSlides` injecté par PHP dans home.php
-   ───────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════
+   HorizonBlog — script.js  (version nettoyée)
+   ════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════
+   UTILITAIRES GLOBAUX
+   ════════════════════════════════════════════════════ */
+
+/* ── Toggle mot de passe visible/caché ── */
+window.togglePassword = function (inputId, btn) {
+  const input   = document.getElementById(inputId);
+  const eyeShow = btn.querySelector('.eye-show');
+  const eyeHide = btn.querySelector('.eye-hide');
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type            = 'text';
+    eyeShow.style.display = 'none';
+    eyeHide.style.display = '';
+  } else {
+    input.type            = 'password';
+    eyeShow.style.display = '';
+    eyeHide.style.display = 'none';
+  }
+};
+
+/* ── Échapper HTML ── */
+function escapeHtml(str) {
+  return str
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;')
+    .replace(/'/g,  '&#039;');
+}
+
+/* ── Scroll fade (IntersectionObserver unique) ── */
 (function () {
-  if (typeof window.heroSlides === 'undefined') return; // pas sur la page home
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+})();
+
+
+/* ════════════════════════════════════════════════════
+   NAV — MENU MOBILE + DROPDOWN UTILISATEUR
+   ════════════════════════════════════════════════════ */
+
+window.toggleMenu = function () {
+  const btn    = document.getElementById('hamburger');
+  const drawer = document.getElementById('mobileDrawer');
+  if (!btn || !drawer) return;
+  btn.classList.toggle('open');
+  drawer.classList.toggle('open');
+  document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+};
+
+/* Fermer le drawer en cliquant un lien */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.mobile-drawer a, .mobile-drawer-link').forEach(a => {
+    a.addEventListener('click', () => {
+      const btn    = document.getElementById('hamburger');
+      const drawer = document.getElementById('mobileDrawer');
+      if (btn)    btn.classList.remove('open');
+      if (drawer) drawer.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+});
+
+/* Dropdown utilisateur connecté */
+window.toggleUserDropdown = function () {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) dropdown.classList.toggle('open');
+};
+
+document.addEventListener('click', function (e) {
+  const menu     = document.getElementById('userMenu');
+  const dropdown = document.getElementById('userDropdown');
+  if (!menu || !dropdown) return;
+  if (!menu.contains(e.target)) dropdown.classList.remove('open');
+});
+
+
+/* ════════════════════════════════════════════════════
+   HERO SLIDER
+   ════════════════════════════════════════════════════ */
+(function () {
+  if (typeof window.heroSlides === 'undefined') return;
 
   const slides    = window.heroSlides;
   const heroBg    = document.getElementById('heroBg');
   const heroTitle = document.getElementById('heroTitle');
   const heroDesc  = document.getElementById('heroDesc');
+  if (!heroBg || !heroTitle || !heroDesc) return;
 
-  if (!heroBg) return;
-
-  heroBg.style.transition    = 'opacity .45s';
-  heroTitle.style.transition = 'opacity .4s';
-  heroDesc.style.transition  = 'opacity .4s';
   heroBg.style.backgroundImage = `url('${slides[0].bg}')`;
-
   let hi = 0, htimer;
 
   window.goHero = function (i) {
@@ -24,7 +103,6 @@
     updateHero();
     startHeroTimer();
   };
-
   window.changeHero = function (d) { window.goHero(hi + d); };
 
   function updateHero() {
@@ -35,15 +113,18 @@
 
     setTimeout(() => {
       heroBg.style.backgroundImage = `url('${s.bg}')`;
-      heroTitle.textContent = s.title;
-      heroDesc.textContent  = s.desc;
+      heroTitle.textContent        = s.title;
+      heroDesc.textContent         = s.desc;
 
-      document.getElementById('btnLireHero').href = `?controller=lecteur&action=detail&id=${s.id}`;
+      const btnHero = document.getElementById('btnLireHero');
+      if (btnHero) btnHero.href = `?controller=lecteur&action=detail&id=${s.id}`;
 
-      document.getElementById('cardAuteur').textContent = s.auteur;
-      document.getElementById('cardDate').textContent   = s.date;
-      const tagsWrap = document.getElementById('cardTags');
-      tagsWrap.innerHTML = s.categories.map(c => `<span class="ctag">${c}</span>`).join('');
+      const cardAuteur = document.getElementById('cardAuteur');
+      const cardDate   = document.getElementById('cardDate');
+      const cardTags   = document.getElementById('cardTags');
+      if (cardAuteur) cardAuteur.textContent = s.auteur;
+      if (cardDate)   cardDate.textContent   = s.date;
+      if (cardTags)   cardTags.innerHTML     = s.categories.map(c => `<span class="ctag">${c}</span>`).join('');
 
       heroBg.style.opacity    = '1';
       heroTitle.style.opacity = '1';
@@ -60,12 +141,14 @@
   setTimeout(() => heroBg.classList.add('zoomed'), 100);
 })();
 
-/* ── ARTICLE SLIDER (infinite loop) ─────────────────── */
-(function () {
-  const track = document.getElementById('articleTrack');
-  if (!track) return;
 
+/* ════════════════════════════════════════════════════
+   ARTICLE SLIDER (infinite loop)
+   ════════════════════════════════════════════════════ */
+(function () {
+  const track  = document.getElementById('articleTrack');
   const dotsEl = document.getElementById('sdots');
+  if (!track || !dotsEl) return;
 
   function getVisible() {
     if (window.innerWidth <= 640)  return 1;
@@ -93,7 +176,6 @@
 
   function cloneForInfinite() {
     while (track.children.length > TOTAL) track.removeChild(track.firstChild);
-    while (track.children.length > TOTAL) track.removeChild(track.lastChild);
     for (let i = TOTAL - VISIBLE; i < TOTAL; i++)
       track.insertBefore(ORIG[i].cloneNode(true), track.firstChild);
     for (let i = 0; i < VISIBLE; i++)
@@ -110,19 +192,16 @@
     applyPos(true);
   }
 
-  buildDots();
-  cloneForInfinite();
-
-  function cardW() {
-    const gap = 28;
-    return track.children[0].offsetWidth + gap;
-  }
+  function cardW() { return track.children[0].offsetWidth + 28; }
 
   function applyPos(instant) {
     const x = (aPos + OFFSET) * cardW();
     track.style.transition = instant ? 'none' : 'transform .5s cubic-bezier(.4,0,.2,1)';
     track.style.transform  = `translateX(-${x}px)`;
   }
+
+  buildDots();
+  cloneForInfinite();
   applyPos(true);
 
   let resizeTimer;
@@ -145,8 +224,8 @@
   function gotoGroup(g)  { aPos = g; applyPos(false); updateDots(); }
 
   function snapCheck() {
-    if (aPos < 0)           { aPos = GROUPS - 1; applyPos(true); }
-    else if (aPos >= GROUPS){ aPos = 0;           applyPos(true); }
+    if (aPos < 0)            { aPos = GROUPS - 1; applyPos(true); }
+    else if (aPos >= GROUPS) { aPos = 0;           applyPos(true); }
   }
 
   function updateDots() {
@@ -157,92 +236,47 @@
   }
 })();
 
-/* ── MENU MOBILE ─────────────────────────────────────── */
-window.toggleMenu = function () {
-  const btn    = document.getElementById('hamburger');
-  const drawer = document.getElementById('mobileDrawer');
-  if (!btn || !drawer) return;
-  btn.classList.toggle('open');
-  drawer.classList.toggle('open');
-  document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
-};
 
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.mobile-drawer a').forEach(a => {
-    a.addEventListener('click', () => {
-      const btn    = document.getElementById('hamburger');
-      const drawer = document.getElementById('mobileDrawer');
-      if (btn)    btn.classList.remove('open');
-      if (drawer) drawer.classList.remove('open');
-      document.body.style.overflow = '';
-    });
-  });
-});
-
-/* ── SCROLL FADE ─────────────────────────────────────── */
-(function () {
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: .1 });
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-})();
-
-
-
-
-
-
-/* ── CONTACT FORM ────────────────────────────────────
-   Validation côté client + feedback visuel
-   ───────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════
+   PAGE CONTACT — validation formulaire
+   ════════════════════════════════════════════════════ */
 (function () {
   const form = document.querySelector('.contact-form');
-  if (!form) return; // pas sur la page contact
+  if (!form) return;
 
-  /* Validation d'un champ : ajoute/retire la classe error */
   function validateField(field) {
     const wrap = field.closest('.cf-field');
     if (!wrap) return true;
-
     let valid = true;
-
     if (field.required && field.value.trim() === '') {
       valid = false;
     } else if (field.type === 'email' && field.value.trim() !== '') {
       valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
     }
-
     wrap.classList.toggle('cf-field-error', !valid);
     wrap.classList.toggle('cf-field-ok',    valid && field.value.trim() !== '');
     return valid;
   }
 
-  /* Validation en temps réel sur chaque champ */
   form.querySelectorAll('input, select, textarea').forEach(field => {
     field.addEventListener('blur',  () => validateField(field));
     field.addEventListener('input', () => {
-      if (field.closest('.cf-field').classList.contains('cf-field-error')) {
+      if (field.closest('.cf-field').classList.contains('cf-field-error'))
         validateField(field);
-      }
     });
   });
 
-  /* Soumission : valide tout avant d'envoyer */
   form.addEventListener('submit', function (e) {
     let allValid = true;
     form.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(field => {
       if (!validateField(field)) allValid = false;
     });
-
     if (!allValid) {
       e.preventDefault();
-      /* Scroll vers le premier champ en erreur */
       const firstError = form.querySelector('.cf-field-error');
       if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-
-    /* Feedback visuel sur le bouton pendant l'envoi */
     const btn = form.querySelector('.cf-submit');
     if (btn) {
       btn.disabled = true;
@@ -258,13 +292,11 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 
 
-
-
 /* ════════════════════════════════════════════════════
-   DETAIL ARTICLE — à ajouter à la fin de script.js
+   DETAIL ARTICLE (espace lecteur)
    ════════════════════════════════════════════════════ */
 
-/* ── TOAST ── */
+/* ── Toast ── */
 function showToast(msg, duration = 2800) {
   const t = document.getElementById('toast');
   if (!t) return;
@@ -273,7 +305,7 @@ function showToast(msg, duration = 2800) {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
-/* ── MODALS ── */
+/* ── Modals ── */
 let _pendingCommentId = null;
 
 function openModal(id, commentId = null) {
@@ -293,7 +325,7 @@ function closeModalOutside(e, id) {
   if (e.target === e.currentTarget) closeModal(id);
 }
 
-/* ── SIGNALEMENT ── */
+/* ── Signalement ── */
 function submitSignal(type) {
   const msg = type === 'article'
     ? 'Article signalé. Merci pour votre retour.'
@@ -301,7 +333,7 @@ function submitSignal(type) {
   showToast(msg);
 }
 
-/* ── SUPPRIMER COMMENTAIRE ── */
+/* ── Supprimer commentaire ── */
 function deleteComment() {
   if (!_pendingCommentId) return;
   const form = document.getElementById('form-delete-' + _pendingCommentId);
@@ -309,22 +341,19 @@ function deleteComment() {
   _pendingCommentId = null;
 }
 
-/* ── MODIFIER COMMENTAIRE ── */
+/* ── Modifier commentaire ── */
 function editComment(id) {
-  // Ferme toutes les zones d'édition ouvertes
   document.querySelectorAll('.dc-edit-zone').forEach(z => z.style.display = 'none');
   document.querySelectorAll('.dc-item-text').forEach(t => t.style.display = '');
 
   const textEl = document.getElementById('comment-text-' + id);
   const editEl = document.getElementById('dc-edit-' + id);
   const taEl   = document.getElementById('dc-edit-ta-' + id);
-
   if (!textEl || !editEl || !taEl) return;
 
   textEl.style.display = 'none';
   editEl.style.display = 'block';
   taEl.focus();
-  // Place le curseur à la fin
   taEl.setSelectionRange(taEl.value.length, taEl.value.length);
 }
 
@@ -342,7 +371,7 @@ function saveEdit(id) {
   taEl.closest('form').submit();
 }
 
-/* ── NOUVEAU COMMENTAIRE ── */
+/* ── Nouveau commentaire ── */
 function expandForm() {
   const actions = document.getElementById('dcFormActions');
   const ta      = document.getElementById('dcTextarea');
@@ -365,16 +394,14 @@ function autoResize(el) {
   el.style.height = el.scrollHeight + 'px';
 }
 
-
-/* ── COMPTEUR COMMENTAIRES ── */
+/* ── Compteur commentaires ── */
 function updateCommentCount(delta) {
   const el = document.querySelector('.dc-count');
   if (!el) return;
-  const current = parseInt(el.textContent) || 0;
-  el.textContent = Math.max(0, current + delta);
+  el.textContent = Math.max(0, (parseInt(el.textContent) || 0) + delta);
 }
 
-/* ── PARTAGE ── */
+/* ── Partage ── */
 function shareClick(btn) {
   btn.classList.add('copied');
   setTimeout(() => btn.classList.remove('copied'), 700);
@@ -387,83 +414,42 @@ function copyLink(btn) {
   setTimeout(() => btn.classList.remove('copied'), 800);
 }
 
-/* ── ÉCHAPPER HTML ── */
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
 
-// Toggle user dropdown
-function toggleUserDropdown() {
-    const dropdown = document.getElementById('userDropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('open');
-    }
-}
-
-// Fermer le dropdown en cliquant ailleurs
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('userMenu');
-    const dropdown = document.getElementById('userDropdown');
-    if (menu && dropdown && !menu.contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
-});
-
-/* ── TOGGLE PASSWORD ── */
-function togglePassword(inputId, btn) {
-  const input  = document.getElementById(inputId);
-  const eyeShow = btn.querySelector('.eye-show');
-  const eyeHide = btn.querySelector('.eye-hide');
-  if (input.type === 'password') {
-    input.type = 'text';
-    eyeShow.style.display = 'none';
-    eyeHide.style.display = '';
-  } else {
-    input.type = 'password';
-    eyeShow.style.display = '';
-    eyeHide.style.display = 'none';
-  }
-}
-
-
-/* ── USER DROPDOWN ── */
-function toggleUserDropdown() {
-  const dropdown = document.getElementById('userDropdown');
-  if (!dropdown) return;
-  dropdown.classList.toggle('open');
-}
-
-// Fermer le dropdown en cliquant ailleurs
-document.addEventListener('click', function(e) {
-  const menu = document.getElementById('userMenu');
-  const dropdown = document.getElementById('userDropdown');
-  if (!menu || !dropdown) return;
-  if (!menu.contains(e.target)) {
-    dropdown.classList.remove('open');
-  }
-});
-
-
+/* ════════════════════════════════════════════════════
+   AUTH — onglets type de compte
+   ════════════════════════════════════════════════════ */
+(function () {
+  const tabs = document.querySelectorAll('.auth-type-tab');
+  if (!tabs.length) return;
+  tabs.forEach(tab => {
+    const radio = tab.querySelector('input[type="radio"]');
+    if (!radio) return;
+    if (radio.checked) tab.classList.add('active');
+    radio.addEventListener('change', function () {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+})();
 
 
 /* ════════════════════════════════════════════════════
-   ESPACE AUTEUR — à ajouter à la fin de script.js
+   ESPACE AUTEUR
    ════════════════════════════════════════════════════ */
 
-/* ── SIDEBAR MOBILE ── */
+/* ── Sidebar mobile ── */
 window.toggleSidebar = function () {
-  const sidebar  = document.getElementById('auSidebar');
-  const overlay  = document.getElementById('auOverlay');
-  const burger   = document.getElementById('auHamburger');
+  const sidebar = document.getElementById('auSidebar');
+  const overlay = document.getElementById('auOverlay');
+  const burger  = document.getElementById('auHamburger');
   if (!sidebar) return;
   sidebar.classList.toggle('open');
-  overlay.classList.toggle('open');
-  burger && burger.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('open');
+  if (burger)  burger.classList.toggle('open');
   document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
 };
 
-/* ── TOAST AUTEUR ── */
+/* ── Toast auteur ── */
 function auShowToast(msg, duration = 2800) {
   const t = document.getElementById('auToast') || document.getElementById('toast');
   if (!t) return;
@@ -472,13 +458,13 @@ function auShowToast(msg, duration = 2800) {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
-/* ── MODAL SUPPRESSION ARTICLE ── */
+/* ── Modal suppression article (auteur) ── */
 window.openDeleteModal = function (id, titre) {
-  const overlay  = document.getElementById('deleteModal');
-  const idInput  = document.getElementById('deleteArticleId');
-  const titleEl  = document.getElementById('deleteArticleTitle');
+  const overlay = document.getElementById('deleteModal');
+  const idInput = document.getElementById('deleteArticleId');
+  const titleEl = document.getElementById('deleteArticleTitle');
   if (!overlay) return;
-  if (idInput)  idInput.value = id;
+  if (idInput)  idInput.value      = id;
   if (titleEl)  titleEl.textContent = titre;
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -490,34 +476,40 @@ window.closeDeleteModal = function () {
   document.body.style.overflow = '';
 };
 
-// Fermer en cliquant sur l'overlay
 document.addEventListener('DOMContentLoaded', function () {
+  /* Fermer modal auteur sur clic overlay */
   const deleteModal = document.getElementById('deleteModal');
   if (deleteModal) {
-    deleteModal.addEventListener('click', function (e) {
-      if (e.target === deleteModal) closeDeleteModal();
+    deleteModal.addEventListener('click', e => {
+      if (e.target === deleteModal) window.closeDeleteModal();
     });
   }
+
+  /* Fermer modals admin sur clic overlay */
+  ['admDeleteModal', 'admDeleteUserModal', 'admDeleteLecteurModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', e => {
+        if (e.target === el) {
+          el.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  });
 });
 
-/* ── GRAPHIQUE DASHBOARD (Chart.js CDN) ── */
+/* ── Graphique auteur (Chart.js) ── */
 (function () {
   if (typeof window.auChartData === 'undefined') return;
   if (!document.getElementById('auChart')) return;
 
-  // Charger Chart.js dynamiquement
-  const script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
-  script.onload = function () { renderAuChart(); };
-  document.head.appendChild(script);
-
   function renderAuChart() {
     const data   = window.auChartData;
     const labels = data.map(d => d.mois);
-    const vues   = data.map(d => parseInt(d.total_vues)   || 0);
-    const arts   = data.map(d => parseInt(d.nb_articles)  || 0);
-
-    const ctx = document.getElementById('auChart').getContext('2d');
+    const vues   = data.map(d => parseInt(d.total_vues)  || 0);
+    const arts   = data.map(d => parseInt(d.nb_articles) || 0);
+    const ctx    = document.getElementById('auChart').getContext('2d');
 
     new Chart(ctx, {
       type: 'bar',
@@ -567,30 +559,25 @@ document.addEventListener('DOMContentLoaded', function () {
           },
         },
         scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
-          },
-          y: {
-            position: 'left',
-            grid: { color: '#f0f0f0' },
-            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
-          },
-          y1: {
-            position: 'right',
-            grid: { display: false },
-            ticks: {
-              font: { family: 'Poppins', size: 11 }, color: '#4f6ef7',
-              stepSize: 1,
-            },
-          },
+          x:  { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' } },
+          y:  { position: 'left',  grid: { color: '#f0f0f0' }, ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' } },
+          y1: { position: 'right', grid: { display: false }, ticks: { font: { family: 'Poppins', size: 11 }, color: '#4f6ef7', stepSize: 1 } },
         },
       },
     });
   }
+
+  if (typeof Chart !== 'undefined') {
+    renderAuChart();
+  } else {
+    const s  = document.createElement('script');
+    s.src    = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+    s.onload = renderAuChart;
+    document.head.appendChild(s);
+  }
 })();
 
-/* ── FORMULAIRE ARTICLE (ajout + modifier) ── */
+/* ── Formulaire article (ajout + modifier) ── */
 (function () {
   const form = document.getElementById('articleForm');
   if (!form) return;
@@ -617,36 +604,33 @@ document.addEventListener('DOMContentLoaded', function () {
     contenuInput.addEventListener('input', () => updateCount(contenuInput, contenuCount, null));
   }
 
-  /* Validation soumission */
+  /* Validation à la soumission */
   form.addEventListener('submit', function (e) {
     let valid = true;
     const fields = [
-      { el: titreInput,   min: 5,  label: 'Le titre doit faire au moins 5 caractères.' },
-      { el: document.getElementById('af-desc'),    min: 10, label: 'La description doit faire au moins 10 caractères.' },
-      { el: contenuInput, min: 20, label: 'Le contenu doit faire au moins 20 caractères.' },
+      { el: titreInput,                                  min: 5,  msg: 'Le titre doit faire au moins 5 caractères.' },
+      { el: document.getElementById('af-desc'),          min: 10, msg: 'La description doit faire au moins 10 caractères.' },
+      { el: contenuInput,                                min: 20, msg: 'Le contenu doit faire au moins 20 caractères.' },
     ];
 
-    fields.forEach(({ el, min, label }) => {
+    fields.forEach(({ el, min, msg }) => {
       if (!el) return;
       const wrap = el.closest('.au-field');
       if (!wrap) return;
-      const len = el.value.trim().length;
-      if (len < min) {
+      if (el.value.trim().length < min) {
         wrap.classList.add('au-field-err');
-        let msg = wrap.querySelector('.au-field-msg');
-        if (!msg) { msg = document.createElement('span'); msg.className = 'au-field-msg'; wrap.appendChild(msg); }
-        msg.textContent = label;
+        let span = wrap.querySelector('.au-field-msg');
+        if (!span) { span = document.createElement('span'); span.className = 'au-field-msg'; wrap.appendChild(span); }
+        span.textContent = msg;
         valid = false;
       } else {
         wrap.classList.remove('au-field-err');
-        const msg = wrap.querySelector('.au-field-msg');
-        if (msg) msg.textContent = '';
+        const span = wrap.querySelector('.au-field-msg');
+        if (span) span.textContent = '';
       }
     });
 
-    // Catégories
     const cats = form.querySelectorAll('input[name="categories[]"]:checked');
-    const catWrap = form.querySelector('.au-categ-list');
     if (cats.length === 0) {
       valid = false;
       auShowToast('⚠️ Sélectionnez au moins une catégorie.');
@@ -662,7 +646,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    /* Feedback bouton */
     const btn = document.getElementById('submitBtn');
     if (btn) {
       btn.disabled = true;
@@ -676,28 +659,25 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 })();
 
-/* ── CATÉGORIES TOGGLE ── */
+/* ── Toggle catégorie ── */
 window.toggleCateg = function (input) {
   const label = input.closest('.au-categ-item');
-  if (!label) return;
-  label.classList.toggle('checked', input.checked);
+  if (label) label.classList.toggle('checked', input.checked);
 };
 
-/* ── UPLOAD IMAGES PREVIEW ── */
+/* ── Upload images preview ── */
 window.previewImages = function (input) {
   const grid = document.getElementById('previewGrid');
   if (!grid || !input.files) return;
-
-  Array.from(input.files).forEach((file, idx) => {
+  Array.from(input.files).forEach(file => {
     if (!file.type.startsWith('image/')) return;
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = e => {
       const div = document.createElement('div');
       div.className = 'au-preview-item';
       div.innerHTML = `
         <img src="${e.target.result}" alt="${file.name}"/>
-        <button type="button" class="au-preview-remove" onclick="removePreview(this)">✕</button>
-      `;
+        <button type="button" class="au-preview-remove" onclick="removePreview(this)">✕</button>`;
       grid.appendChild(div);
     };
     reader.readAsDataURL(file);
@@ -714,54 +694,22 @@ window.handleDrop = function (e) {
   if (zone) zone.classList.remove('dragging');
   const input = document.getElementById('af-images');
   if (!input || !e.dataTransfer.files.length) return;
-  // Transférer les fichiers dans l'input (crée un DataTransfer)
   const dt = new DataTransfer();
   Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
   input.files = dt.files;
-  previewImages(input);
+  window.previewImages(input);
 };
-
-/* ── SCROLL FADE (auteur pages) ── */
-(function () {
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: .08 });
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-})();
-
-/* ── MODALS COMMENTAIRES (partagé avec le layout lecteur) ── */
-/* openModal / closeModal / closeModalOutside / deleteComment déjà définis
-   dans la section lecteur du script — ils fonctionnent aussi côté auteur.
-   On réutilise signalCommentId pour le formulaire de signalement auteur. */
-(function () {
-  const openOrig = window.openModal;
-  window.openModal = function (id, commentId) {
-    // Mise à jour du champ caché dans la modale de signalement auteur
-    if (id === 'modalSignalComment') {
-      const field = document.getElementById('signalCommentId');
-      if (field && commentId != null) field.value = commentId;
-    }
-    if (typeof openOrig === 'function') openOrig(id, commentId);
-    else {
-      _pendingCommentId = commentId;
-      const el = document.getElementById(id);
-      if (el) el.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-  };
-})();
-
 
 
 /* ════════════════════════════════════════════════════
-   ESPACE ADMIN — à ajouter à la fin de script.js
+   ESPACE ADMIN
    ════════════════════════════════════════════════════ */
 
-/* ── SIDEBAR MOBILE ADMIN ── */
+/* ── Sidebar mobile admin ── */
 window.admToggleSidebar = function () {
-  const sidebar  = document.getElementById('admSidebar');
-  const overlay  = document.getElementById('admOverlay');
-  const burger   = document.getElementById('admHamburger');
+  const sidebar = document.getElementById('admSidebar');
+  const overlay = document.getElementById('admOverlay');
+  const burger  = document.getElementById('admHamburger');
   if (!sidebar) return;
   sidebar.classList.toggle('open');
   if (overlay) overlay.classList.toggle('open');
@@ -769,7 +717,7 @@ window.admToggleSidebar = function () {
   document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
 };
 
-/* ── TOAST ADMIN ── */
+/* ── Toast admin ── */
 function admShowToast(msg, duration = 2800) {
   const t = document.getElementById('admToast');
   if (!t) return;
@@ -778,93 +726,68 @@ function admShowToast(msg, duration = 2800) {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
-/* ── MODAL SUPPRESSION ARTICLE ── */
+/* ── Modal suppression article (admin) ── */
 window.admOpenDelete = function (type, id, name) {
-  const overlay  = document.getElementById('admDeleteModal');
-  const idInput  = document.getElementById('admDeleteId');
-  const nameEl   = document.getElementById('admDeleteName');
+  const overlay = document.getElementById('admDeleteModal');
+  const idInput = document.getElementById('admDeleteId');
+  const nameEl  = document.getElementById('admDeleteName');
   if (!overlay) return;
-  if (idInput)  idInput.value = id;
-  if (nameEl)   nameEl.textContent = '"' + name + '"';
+  if (idInput)  idInput.value       = id;
+  if (nameEl)   nameEl.textContent  = '"' + name + '"';
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
-
 window.admCloseDelete = function () {
   const overlay = document.getElementById('admDeleteModal');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 };
 
-/* ── MODAL SUPPRESSION AUTEUR ── */
+/* ── Modal suppression auteur (admin) ── */
 window.admOpenDeleteUser = function (type, id, name) {
   const overlay = document.getElementById('admDeleteUserModal');
   const idInput = document.getElementById('admDeleteUserId');
   const nameEl  = document.getElementById('admDeleteUserName');
   if (!overlay) return;
-  if (idInput)  idInput.value = id;
+  if (idInput)  idInput.value      = id;
   if (nameEl)   nameEl.textContent = name;
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
-
 window.admCloseDeleteUser = function () {
   const overlay = document.getElementById('admDeleteUserModal');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 };
 
-/* ── MODAL SUPPRESSION LECTEUR ── */
+/* ── Modal suppression lecteur (admin) ── */
 window.admOpenDeleteLecteur = function (id, name) {
   const overlay = document.getElementById('admDeleteLecteurModal');
   const idInput = document.getElementById('admDeleteLecteurId');
   const nameEl  = document.getElementById('admDeleteLecteurName');
   if (!overlay) return;
-  if (idInput)  idInput.value = id;
+  if (idInput)  idInput.value      = id;
   if (nameEl)   nameEl.textContent = name;
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
-
 window.admCloseDeleteLecteur = function () {
   const overlay = document.getElementById('admDeleteLecteurModal');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 };
 
-/* Fermer les modals en cliquant sur l'overlay */
-document.addEventListener('DOMContentLoaded', function () {
-  ['admDeleteModal','admDeleteUserModal','admDeleteLecteurModal'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('click', function (e) {
-        if (e.target === el) {
-          el.classList.remove('open');
-          document.body.style.overflow = '';
-        }
-      });
-    }
-  });
-
-  /* Scroll fade pour les pages admin */
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: .08 });
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-});
-
-/* ── GRAPHIQUE DASHBOARD ADMIN ── */
+/* ── Graphique dashboard admin (Chart.js) ── */
 (function () {
   if (typeof window.admChartData === 'undefined') return;
   if (!document.getElementById('admChart')) return;
 
-  // Charger Chart.js dynamiquement si pas déjà chargé
   function renderAdmChart() {
     const data   = window.admChartData;
     const labels = data.map(d => d.mois);
     const values = data.map(d => parseInt(d.nb_articles) || 0);
+    const ctx    = document.getElementById('admChart').getContext('2d');
 
-    const ctx = document.getElementById('admChart').getContext('2d');
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -889,36 +812,23 @@ document.addEventListener('DOMContentLoaded', function () {
             bodyColor: 'rgba(255,255,255,.8)',
             padding: 12,
             borderRadius: 10,
-            callbacks: {
-              label: ctx => 'Articles : ' + ctx.parsed.y,
-            },
+            callbacks: { label: ctx => 'Articles : ' + ctx.parsed.y },
           },
         },
         scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' },
-          },
-          y: {
-            grid: { color: '#f0f0f0' },
-            ticks: {
-              font: { family: 'Poppins', size: 11 }, color: '#6b7280',
-              stepSize: 1,
-            },
-            beginAtZero: true,
-          },
+          x: { grid: { display: false }, ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280' } },
+          y: { grid: { color: '#f0f0f0' }, beginAtZero: true, ticks: { font: { family: 'Poppins', size: 11 }, color: '#6b7280', stepSize: 1 } },
         },
       },
     });
   }
 
-  // Chart.js déjà chargé par le dashboard auteur ?
   if (typeof Chart !== 'undefined') {
     renderAdmChart();
   } else {
-    const script  = document.createElement('script');
-    script.src    = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
-    script.onload = renderAdmChart;
-    document.head.appendChild(script);
+    const s  = document.createElement('script');
+    s.src    = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+    s.onload = renderAdmChart;
+    document.head.appendChild(s);
   }
 })();

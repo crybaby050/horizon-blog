@@ -24,6 +24,7 @@ function executeSelect(string $sql, array $data = [], bool $one = false) {
  */
 function executeUpdate(string $sql, array $data): void {
     $conn      = getConnexion();
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $statement = $conn->prepare($sql);
     $statement->execute($data);
 }

@@ -7,7 +7,7 @@ function loginAdmin(string $email, string $mdp): array|false {
             FROM admin WHERE email = :email";
     $admin = executeSelect($sql, [':email' => $email], true);
     if (!$admin) return false;
-    // Comparaison directe (sans hash) — à sécuriser en production
+    // Comparaison directe
     if ($mdp !== $admin['mot_de_passe']) return false;
     return $admin;
 }

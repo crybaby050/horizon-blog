@@ -24,15 +24,6 @@
   <a href="<?= path('lecteur','article') ?>"
      class="filter-chip <?= empty($statut) ? 'active' : '' ?>">Tous</a>
 
-  <a href="<?= path('lecteur','article',['statut'=>'Actif','page'=>1,'q'=>$search]) ?>"
-     class="filter-chip <?= $statut === 'Actif' ? 'active' : '' ?>">Publiés</a>
-
-  <a href="<?= path('lecteur','article',['statut'=>'En attente','page'=>1,'q'=>$search]) ?>"
-     class="filter-chip <?= $statut === 'En attente' ? 'active' : '' ?>">En attente</a>
-
-  <a href="<?= path('lecteur','article',['statut'=>'Invalide','page'=>1,'q'=>$search]) ?>"
-     class="filter-chip <?= $statut === 'Invalide' ? 'active' : '' ?>">Invalides</a>
-
   <div class="filter-search">
     <input type="text" name="q" placeholder="Rechercher un article…"
            value="<?= htmlspecialchars($search) ?>"/>

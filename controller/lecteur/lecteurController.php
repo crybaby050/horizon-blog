@@ -17,15 +17,12 @@ $home = function () {
 
 /* ── LISTE DES ARTICLES ── */
 $article = function () {
-    $statut  = trim($_GET['statut'] ?? '');
-    $search  = trim($_GET['q']      ?? '');
+    $search  = trim($_GET['q']   ?? '');
     $page    = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = 9;
 
-    $statutsValides = ['Actif', 'En attente', 'Invalide', 'Valide'];
-    if (!in_array($statut, $statutsValides, true)) {
-        $statut = '';
-    }
+    // On ignore tout filtre statut venant de l'URL, on force 'Actif'
+    $statut = 'Actif';
 
     $totalArticles = countArticles($statut, $search);
     $totalPages    = (int) ceil($totalArticles / $perPage);

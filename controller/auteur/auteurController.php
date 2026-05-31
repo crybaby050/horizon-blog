@@ -80,12 +80,22 @@ $ajout = function () use ($auteurId) {
             $errors['categories'] = 'Maximum 5 catégories.';
 
         // Images uploadées
-        $images = [];
+        $images    = [];
+        $uploadDir = ROOT . 'public/image/';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
         if (!empty($_FILES['images']['name'][0])) {
             $allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+
             foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
                 if ($_FILES['images']['error'][$i] !== UPLOAD_ERR_OK) continue;
-                $mime = mime_content_type($tmp);
+
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mime  = $finfo->file($tmp);
+
                 if (!in_array($mime, $allowed)) {
                     $errors['images'] = 'Format image non supporté (jpg, png, webp, gif).';
                     break;
@@ -94,13 +104,18 @@ $ajout = function () use ($auteurId) {
                     $errors['images'] = 'Chaque image doit faire moins de 5 Mo.';
                     break;
                 }
-                // On simule un upload — en production, upload vers /public/uploads/
-                // Ici on stocke juste le nom original + une URL Unsplash de démo
-                $images[] = [
-                    'url'     => 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1400&q=85',
-                    'legende' => htmlspecialchars($_FILES['images']['name'][$i]),
-                    'ordre'   => $i + 1,
-                ];
+
+                $ext      = pathinfo($_FILES['images']['name'][$i], PATHINFO_EXTENSION);
+                $filename = uniqid('img_') . '.' . strtolower($ext);
+                $dest     = $uploadDir . $filename;
+
+                if (move_uploaded_file($tmp, $dest)) {
+                    $images[] = [
+                        'url'     => '/public/image/' . $filename,
+                        'legende' => htmlspecialchars($_FILES['images']['name'][$i]),
+                        'ordre'   => $i + 1,
+                    ];
+                }
             }
         }
 

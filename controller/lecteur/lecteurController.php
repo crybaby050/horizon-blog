@@ -67,6 +67,10 @@ $detail = function () {
  
     /* ── Actions POST ── */
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        error_log("POST reçu: " . print_r($_POST, true));
+    
+    $postAction = trim($_POST['post_action'] ?? '');
+    error_log("post_action: '" . $postAction . "'");
         $postAction = trim($_POST['post_action'] ?? '');
  
         // Ajouter un commentaire
@@ -113,15 +117,21 @@ $detail = function () {
  
         // Signaler un commentaire
         if ($postAction === 'signal_comment') {
-            $commentId   = (int) ($_POST['comment_id'] ?? 0);
-            $libelle     = trim($_POST['raison']      ?? 'Autre');
-            $description = trim($_POST['description'] ?? '');
-            if ($commentId > 0 && $libelle !== '') {
-                addSignalement($libelle, $description, null, $commentId, $currentLecteurId);
-            }
-            header("Location: " . path('lecteur', 'detail', ['id' => $id]) . "#commentsSection");
-            exit();
-        }
+    $commentId   = (int) ($_POST['comment_id'] ?? 0);
+    $libelle     = trim($_POST['raison']      ?? 'Autre');
+    $description = trim($_POST['description'] ?? '');
+    
+    error_log("SESSION user: " . print_r($_SESSION['user'] ?? 'VIDE', true));
+    error_log("currentAuteurId: " . var_export($currentAuteurId, true));
+    error_log("currentLecteurId: " . var_export($currentLecteurId, true));
+    error_log("commentId: $commentId | libelle: $libelle");
+    
+    if ($libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
+        addSignalement($libelle, $description, $id, null, $currentLecteurId, $currentAuteurId);
+    }
+    header("Location: " . path('lecteur', 'detail', ['id' => $id]));
+    exit();
+}
     }
  
     /* ── Données ── */

@@ -313,6 +313,12 @@ function openModal(id, commentId = null) {
   const el = document.getElementById(id);
   if (el) el.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Injecter le comment_id dans le formulaire de signalement
+  if (id === 'modalSignalComment' && commentId) {
+    const input = document.getElementById('signalCommentId');
+    if (input) input.value = commentId;
+  }
 }
 
 function closeModal(id) {

@@ -21,7 +21,6 @@ $article = function () {
     $page    = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = 9;
 
-    // On ignore tout filtre statut venant de l'URL, on force 'Actif'
     $statut = 'Actif';
 
     $totalArticles = countArticles($statut, $search);
@@ -61,7 +60,6 @@ $detail = function () {
     }
  
     /* ── Utilisateur connecté (session) ── */
-    // Pour l'instant on simule : adapte selon ton système d'auth
     // session_start() doit être appelé avant (dans index.php ou helper.php)
     $sessionUser    = $_SESSION['user']      ?? null;  // tableau avec id, type ('auteur'|'lecteur')
     $currentAuteurId  = ($sessionUser && $sessionUser['type'] === 'auteur')  ? (int)$sessionUser['id'] : null;
@@ -104,14 +102,14 @@ $detail = function () {
  
         // Signaler un article
         if ($postAction === 'signal_article') {
-            $libelle     = trim($_POST['raison']      ?? 'Autre');
-            $description = trim($_POST['description'] ?? '');
-            if ($libelle !== '') {
-                addSignalement($libelle, $description, $id, null, $currentLecteurId);
-            }
-            header("Location: " . path('lecteur', 'detail', ['id' => $id]));
-            exit();
-        }
+    $libelle     = trim($_POST['raison']      ?? 'Autre');
+    $description = trim($_POST['description'] ?? '');
+    if ($libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
+        addSignalement($libelle, $description, $id, null, $currentLecteurId, $currentAuteurId);
+    }
+    header("Location: " . path('lecteur', 'detail', ['id' => $id]));
+    exit();
+}
  
         // Signaler un commentaire
         if ($postAction === 'signal_comment') {

@@ -1,10 +1,10 @@
 /* ════════════════════════════════════════════════════
-   HorizonBlog — script.js  (version nettoyée)
+   HorizonBlog — script.js
    ════════════════════════════════════════════════════ */
 
 /* ════════════════════════════════════════════════════
    UTILITAIRES GLOBAUX
-   ════════════════════════════════════════════════════ */
+   ═════════════════════════════==══════════════════════ */
 
 /* ── Toggle mot de passe visible/caché ── */
 window.togglePassword = function (inputId, btn) {

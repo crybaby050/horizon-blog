@@ -286,18 +286,20 @@ function addSignalement(
     string  $description,
     ?int    $article_id,
     ?int    $commentaire_id,
-    ?int    $lecteur_id
+    ?int    $lecteur_id,
+    ?int    $auteur_id = null  // ← ajoute ce paramètre
 ): void {
     $sql = "INSERT INTO signalement
-                (libelle, description, date_creation, statut, article_id, commentaire_id, lecteur_id)
+                (libelle, description, date_creation, statut, article_id, commentaire_id, lecteur_id, auteur_id)
             VALUES
-                (:libelle, :description, NOW(), 'Non traiter', :article_id, :commentaire_id, :lecteur_id)";
+                (:libelle, :description, NOW(), 'Non traiter', :article_id, :commentaire_id, :lecteur_id, :auteur_id)";
     executeUpdate($sql, [
         ':libelle'        => $libelle,
         ':description'    => $description,
         ':article_id'     => $article_id,
         ':commentaire_id' => $commentaire_id,
         ':lecteur_id'     => $lecteur_id,
+        ':auteur_id'      => $auteur_id,
     ]);
 }
  

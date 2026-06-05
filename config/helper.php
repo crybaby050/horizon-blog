@@ -66,12 +66,19 @@ function loadView(string $view, array $datas = [], string $layout = "base"): voi
  * @param array  $params      Paramètres supplémentaires
  */
 function path(string $controller, string $action, array $params = []): string {
-    $url = WEBROOT . "?controller=" . urlencode($controller)
-         . "&action=" . urlencode($action);
+    $url = WEBROOT . urlencode($controller) . "/" . urlencode($action);
 
-    foreach ($params as $key => $value) {
-        if ($value !== '' && $value !== null) {
-            $url .= "&" . urlencode($key) . "=" . urlencode($value);
+    // id devient segment d'URL
+    if (isset($params['id']) && $params['id'] !== '' && $params['id'] !== null) {
+        $url .= "/" . urlencode($params['id']);
+        unset($params['id']);
+    }
+
+    // les autres params restent en query string
+    if (!empty($params)) {
+        $query = http_build_query(array_filter($params, fn($v) => $v !== '' && $v !== null));
+        if ($query) {
+            $url .= "?" . $query;
         }
     }
 

@@ -15,5 +15,11 @@ $_REQUEST['controller'] = $segments[0] !== '' ? $segments[0] : 'lecteur';
 $_REQUEST['action']     = $segments[1] ?? 'home';
 $_REQUEST['id']         = $segments[2] ?? null;
 
+if (isset($segments[2])) {
+    $_GET['id'] = $segments[2];
+}
+
+
 require_once ROOT."config/helper.php";
 require_once ROOT. "routes/router.php"; 
+//dd($_REQUEST['id']);

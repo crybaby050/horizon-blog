@@ -122,13 +122,15 @@ $ajout = function () use ($auteurId) {
     ), "auteur");
 };
 
-/* ── DETAIL ARTICLE (vue auteur) ── */
+/* ── DETAIL ARTICLE COTÉ AUTEUR ── */
 $detail = function () use ($auteurId) {
     $id = (int)($_GET['id'] ?? 0);
     if (!$id) { header('Location: ' . path('auteur','articles')); exit(); }
 
     $article = getArticleAuteur($id, $auteurId);
     if (!$article) { header('Location: ' . path('auteur','articles')); exit(); }
+    //dd($article);
+
 
     // Actions POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

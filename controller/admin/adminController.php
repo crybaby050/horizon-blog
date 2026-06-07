@@ -1,7 +1,13 @@
 <?php
 require_once ROOT . "model/admin/adminModel.php";
+
+//eval(file_get_contents(ROOT . "model/admin/adminModel.php"));
+//var_dump(function_exists('getNbSignalementsNonTraites'));
+//die();
 //$_SESSION['admin'] = ['prenom' => 'Moussa', 'nom' => 'Diallo', 'email' => 'admin@horizonblog.com'];
 
+//var_dump(function_exists('getNbSignalementsNonTraites'));
+//die();
 /* ── Protection accès ── */
 $isLogin = ($_REQUEST['action'] ?? '') === 'login';
 
@@ -200,34 +206,51 @@ $lecteurs = function () use ($nbSignalementsNonTraites) {
 $signalements = function () use ($nbSignalementsNonTraites) {
     $statut  = trim($_GET['statut'] ?? '');
     $search  = trim($_GET['q']     ?? '');
+    $type    = trim($_GET['type']  ?? ''); // 'article' | 'commentaire' | ''
     $page    = max(1, (int)($_GET['page'] ?? 1));
     $perPage = 10;
 
     if (!in_array($statut, ['Non traiter','Traiter'], true)) $statut = '';
+    if (!in_array($type, ['article','commentaire'], true))   $type   = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $postAction   = $_POST['post_action']    ?? '';
+        $postAction    = $_POST['post_action']     ?? '';
         $signalementId = (int)($_POST['signalement_id'] ?? 0);
+        $articleId     = (int)($_POST['article_id']     ?? 0);
+        $commentaireId = (int)($_POST['commentaire_id'] ?? 0);
 
-        if ($postAction === 'traiter'  && $signalementId) updateStatutSignalement($signalementId, 'Traiter');
-        if ($postAction === 'ignorer'  && $signalementId) deleteSignalement($signalementId);
-        if ($postAction === 'supprimer_commentaire') {
-            $comId = (int)($_POST['comment_id'] ?? 0);
-            if ($comId) deleteCommentaireAdmin($comId);
+        // Juste marquer traité sans action sur le contenu
+        if ($postAction === 'traiter' && $signalementId) {
+            updateStatutSignalement($signalementId, 'Traiter');
         }
 
-        header('Location: '.path('admin','signalement',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        // Invalider l'article + traiter le signalement
+        if ($postAction === 'invalider_article' && $signalementId && $articleId) {
+            invaliderArticleEtTraiter($signalementId, $articleId);
+        }
+
+        // Supprimer le commentaire + traiter le signalement
+        if ($postAction === 'supprimer_commentaire' && $signalementId && $commentaireId) {
+            supprimerCommentaireEtTraiter($signalementId, $commentaireId);
+        }
+
+        // Ignorer = supprimer le signalement
+        if ($postAction === 'ignorer' && $signalementId) {
+            deleteSignalement($signalementId);
+        }
+
+        header('Location: '.path('admin','signalements',['statut'=>$statut,'q'=>$search,'type'=>$type,'page'=>$page]));
         exit();
     }
 
-    $total        = countAllSignalements($statut, $search);
+    $total        = countAllSignalements($statut, $search, $type);
     $totalPages   = (int)ceil($total / $perPage);
     $page         = min($page, max(1, $totalPages));
-    $signalements = getAllSignalements($statut, $search, $page, $perPage);
+    $signalements = getAllSignalements($statut, $search, $page, $perPage, $type);
     $nbSignalementsNonTraites = getNbSignalementsNonTraites();
 
     loadView("admin/signalement", compact(
-        'signalements','statut','search','page','totalPages','total','nbSignalementsNonTraites'
+        'signalements','statut','search','type','page','totalPages','total','nbSignalementsNonTraites'
     ), "admin");
 };
 

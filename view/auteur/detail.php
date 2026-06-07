@@ -92,9 +92,12 @@
 
       <!-- Image couverture -->
       <?php if (!empty($article['image_p'])): ?>
-      <div class="au-detail-cover">
-        <img src="<?= htmlspecialchars($article['image_p']) ?>" alt="<?= htmlspecialchars($article['libelle']) ?>"/>
-      </div>
+        <div class="au-detail-cover">
+          <?php $imgCover = str_starts_with($article['image_p'], 'http')
+              ? htmlspecialchars($article['image_p'])
+              : WEBROOT . htmlspecialchars($article['image_p']); ?>
+          <img src="<?= $imgCover ?>" alt="<?= htmlspecialchars($article['libelle']) ?>"/>
+        </div>
       <?php endif; ?>
 
       <!-- Contenu -->

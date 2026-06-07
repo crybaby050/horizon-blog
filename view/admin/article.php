@@ -56,7 +56,12 @@
             <td>
               <div class="adm-table-art">
                 <div class="adm-table-art-img">
-                  <img src="<?= !empty($art['image_p'])?htmlspecialchars($art['image_p']):'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=100&q=60' ?>" alt=""/>
+                  <?php $imgAdm = !empty($art['image_p'])
+                      ? (str_starts_with($art['image_p'], 'http')
+                          ? htmlspecialchars($art['image_p'])
+                          : WEBROOT . htmlspecialchars($art['image_p']))
+                      : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=100&q=60'; ?>
+                  <img src="<?= $imgAdm ?>" alt=""/>
                 </div>
                 <span><?= htmlspecialchars(strlen($art['libelle'])>50?substr($art['libelle'],0,50).'…':$art['libelle']) ?></span>
               </div>

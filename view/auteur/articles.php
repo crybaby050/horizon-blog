@@ -102,8 +102,10 @@
           default      => 'au-status-actif'
         };
         $img = !empty($art['image_p'])
+        ? (str_starts_with($art['image_p'], 'http')
             ? htmlspecialchars($art['image_p'])
-            : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
+            : WEBROOT . htmlspecialchars($art['image_p']))
+        : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
       ?>
       <div class="au-art-card">
         <a href="<?= path('auteur','detail',['id'=>$art['id']]) ?>" class="au-art-img">

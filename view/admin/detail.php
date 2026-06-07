@@ -70,9 +70,12 @@
 
       <!-- Image -->
       <?php if (!empty($article['image_p'])): ?>
-      <div class="adm-detail-cover">
-        <img src="<?= htmlspecialchars($article['image_p']) ?>" alt=""/>
-      </div>
+        <div class="adm-detail-cover">
+          <?php $imgAdmDetail = str_starts_with($article['image_p'], 'http')
+              ? htmlspecialchars($article['image_p'])
+              : WEBROOT . htmlspecialchars($article['image_p']); ?>
+          <img src="<?= $imgAdmDetail ?>" alt=""/>
+        </div>
       <?php endif; ?>
 
       <!-- Contenu -->

@@ -141,7 +141,12 @@
           ?>
           <a href="<?= path('auteur','detail',['id'=>$art['id']]) ?>" class="au-recent-item">
             <div class="au-recent-img">
-              <img src="<?= !empty($art['image_p']) ? htmlspecialchars($art['image_p']) : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&q=70' ?>"
+              <?php $imgRecent = !empty($art['image_p'])
+                ? (str_starts_with($art['image_p'], 'http')
+                    ? htmlspecialchars($art['image_p'])
+                    : WEBROOT . htmlspecialchars($art['image_p']))
+                : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&q=70'; ?>
+            <img src="<?= $imgRecent ?>"
                    alt="<?= htmlspecialchars($art['libelle']) ?>"/>
             </div>
             <div class="au-recent-info">

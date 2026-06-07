@@ -15,13 +15,17 @@ $avatarStyle = function(string $type): string {
 
 // Image fallback
 $imgArticle = !empty($article['image_p'])
-    ? htmlspecialchars($article['image_p'])
+    ? (str_starts_with($article['image_p'], 'http')
+        ? htmlspecialchars($article['image_p'])
+        : WEBROOT . htmlspecialchars($article['image_p']))
     : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1400&q=85';
 
 // Image fallback similaires
 $imgSim = function(array $art): string {
     return !empty($art['image_p'])
-        ? htmlspecialchars($art['image_p'])
+        ? (str_starts_with($art['image_p'], 'http')
+            ? htmlspecialchars($art['image_p'])
+            : WEBROOT . htmlspecialchars($art['image_p']))
         : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&q=70';
 };
 ?>

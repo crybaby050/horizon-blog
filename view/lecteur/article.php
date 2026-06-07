@@ -84,8 +84,10 @@
 
         // Image de fallback
         $img = !empty($art['image_p'])
-            ? htmlspecialchars($art['image_p'])
-            : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
+    ? (str_starts_with($art['image_p'], 'http')
+        ? htmlspecialchars($art['image_p'])
+        : WEBROOT . htmlspecialchars($art['image_p']))
+    : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
       ?>
 
       <div class="a-card <?= $featured ?> fade-up" style="transition-delay:<?= $delay ?>s">

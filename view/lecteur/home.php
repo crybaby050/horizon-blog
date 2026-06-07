@@ -93,7 +93,14 @@
           <div class="flip-card">
             <div class="flip-inner">
               <div class="flip-front">
-                <img src="<?= htmlspecialchars($art['image_p'] ?? 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80') ?>"
+                <?php
+                  $imgHome = !empty($art['image_p'])
+                      ? (str_starts_with($art['image_p'], 'http')
+                          ? htmlspecialchars($art['image_p'])
+                          : WEBROOT . htmlspecialchars($art['image_p']))
+                      : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
+                  ?>
+                  <img src="<?= $imgHome ?>"
                      alt="<?= htmlspecialchars($art['libelle']) ?>"/>
                 <div class="flip-front-overlay">
                   <h3><?= htmlspecialchars($art['libelle']) ?></h3>
@@ -285,9 +292,11 @@ window.heroSlides = <?= json_encode(array_map(function($article) {
         'id'         => $article['id'],
         'title'      => $article['libelle'],
         'desc'       => $article['description'],
-        'bg'         => !empty($article['image_p'])
-                            ? $article['image_p']
-                            : 'https://images.unsplash.com/photo-1570481662006-a3a1374699e8?w=1800&q=85',
+        'bg' => !empty($article['image_p'])
+                  ? (str_starts_with($article['image_p'], 'http')
+                      ? $article['image_p']
+                      : WEBROOT . $article['image_p'])
+                  : 'https://images.unsplash.com/photo-1570481662006-a3a1374699e8?w=1800&q=85',
         'auteur'     => $article['auteur'] ?? 'Inconnu',
         'date'       => date('d/m/Y', strtotime($article['date_creation'])),
         'categories' => array_column($article['categories'], 'libelle')

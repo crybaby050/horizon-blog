@@ -5,6 +5,27 @@ require_once ROOT . "model/auteur/auteurModel.php";
 var_dump($_SESSION['utilisateur']['type'] === 'auteur');
 die();*/
 
+// Fonction utilitaire upload image
+function uploadImage(array $file): string|false {
+    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    $ext     = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','image/gif'=>'gif'];
+
+    if ($file['error'] !== UPLOAD_ERR_OK)              return false;
+    if (!in_array($file['type'], $allowed))            return false;
+    if ($file['size'] > 5 * 1024 * 1024)              return false;
+
+    $mime = mime_content_type($file['tmp_name']);
+    if (!in_array($mime, $allowed))                    return false;
+
+    $extension = $ext[$mime];
+    $filename  = uniqid('img_', true) . '.' . $extension;
+    $dest      = ROOT . 'public/uploads/' . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
+
+    return 'uploads/' . $filename; // chemin relatif stocké en base
+}
+
 $auteurId = null;
 if (!empty($_SESSION['user']) && $_SESSION['user']['type'] === 'auteur') {
     $auteurId = $_SESSION['user']['id'];
@@ -79,37 +100,39 @@ $ajout = function () use ($auteurId) {
         if (count($cats) > 5)
             $errors['categories'] = 'Maximum 5 catégories.';
 
-        // Images uploadées
         $images = [];
-        if (!empty($_FILES['images']['name'][0])) {
-            $allowed = ['image/jpeg','image/png','image/webp','image/gif'];
-            foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
-                if ($_FILES['images']['error'][$i] !== UPLOAD_ERR_OK) continue;
-                $mime = mime_content_type($tmp);
-                if (!in_array($mime, $allowed)) {
-                    $errors['images'] = 'Format image non supporté (jpg, png, webp, gif).';
-                    break;
-                }
-                if ($_FILES['images']['size'][$i] > 5 * 1024 * 1024) {
-                    $errors['images'] = 'Chaque image doit faire moins de 5 Mo.';
-                    break;
-                }
-                // On simule un upload — en production, upload vers /public/uploads/
-                // Ici on stocke juste le nom original + une URL Unsplash de démo
-                $images[] = [
-                    'url'     => 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1400&q=85',
-                    'legende' => htmlspecialchars($_FILES['images']['name'][$i]),
-                    'ordre'   => $i + 1,
-                ];
-            }
+if (!empty($_FILES['images']['name'][0])) {
+    foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
+        if ($_FILES['images']['error'][$i] !== UPLOAD_ERR_OK) continue;
+
+        $file = [
+            'tmp_name' => $_FILES['images']['tmp_name'][$i],
+            'type'     => $_FILES['images']['type'][$i],
+            'size'     => $_FILES['images']['size'][$i],
+            'error'    => $_FILES['images']['error'][$i],
+            'name'     => $_FILES['images']['name'][$i],
+        ];
+
+        $url = uploadImage($file);
+        if ($url === false) {
+            $errors['images'] = 'Erreur lors de l\'upload d\'une image.';
+            break;
         }
+
+        $images[] = [
+            'url'     => $url,
+            'legende' => htmlspecialchars($_FILES['images']['name'][$i]),
+            'ordre'   => $i + 1,
+        ];
+    }
+}
 
         if (empty($errors)) {
             $articleId = insertArticle($auteurId, $titre, $description, $contenu);
             if ($articleId) {
                 insertCategoriesArticle($articleId, $cats);
                 if (!empty($images)) insertImagesArticle($articleId, $images);
-                header('Location: ' . path('auteur', 'articles') . '&success=1');
+                header('Location: ' . path('auteur', 'articles', ['success' => '1']));
                 exit();
             } else {
                 $errors['global'] = 'Une erreur est survenue lors de la création.';
@@ -173,17 +196,17 @@ $detail = function () use ($auteurId) {
 
 /* ── MODIFIER ARTICLE ── */
 $modifier = function () use ($auteurId) {
-    $id = (int)($_GET['id'] ?? 0);
+    $id = (int)($_REQUEST['id'] ?? 0);
     if (!$id) { header('Location: ' . path('auteur','articles')); exit(); }
 
     $article = getArticleAuteur($id, $auteurId);
     if (!$article) { header('Location: ' . path('auteur','articles')); exit(); }
 
-    $categories            = getAllCategoriesSimple();
-    $categoriesArticle     = getCategoriesArticle($id);
-    $imagesArticle         = getImagesArticle($id);
-    $nbArticlesAuteur      = countArticlesAuteur($auteurId);
-    $errors                = [];
+    $categories        = getAllCategoriesSimple();
+    $categoriesArticle = getCategoriesArticle($id);
+    $imagesArticle     = getImagesArticle($id);
+    $nbArticlesAuteur  = countArticlesAuteur($auteurId);
+    $errors            = [];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['post_action'] ?? '') === 'edit_article') {
         $titre       = trim($_POST['titre']       ?? '');
@@ -208,15 +231,24 @@ $modifier = function () use ($auteurId) {
 
             // Nouvelles images
             if (!empty($_FILES['images']['name'][0])) {
-                $allowed = ['image/jpeg','image/png','image/webp','image/gif'];
                 $newImgs = [];
                 $ordre   = count($imagesArticle) + 1;
                 foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
                     if ($_FILES['images']['error'][$i] !== UPLOAD_ERR_OK) continue;
-                    $mime = mime_content_type($tmp);
-                    if (!in_array($mime, $allowed)) continue;
+
+                    $file = [
+                        'tmp_name' => $_FILES['images']['tmp_name'][$i],
+                        'type'     => $_FILES['images']['type'][$i],
+                        'size'     => $_FILES['images']['size'][$i],
+                        'error'    => $_FILES['images']['error'][$i],
+                        'name'     => $_FILES['images']['name'][$i],
+                    ];
+
+                    $url = uploadImage($file);
+                    if ($url === false) continue;
+
                     $newImgs[] = [
-                        'url'     => 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1400&q=85',
+                        'url'     => $url,
                         'legende' => htmlspecialchars($_FILES['images']['name'][$i]),
                         'ordre'   => $ordre++,
                     ];
@@ -233,7 +265,8 @@ $modifier = function () use ($auteurId) {
             header('Location: ' . path('auteur','detail',['id'=>$id]) . '&success=edit');
             exit();
         }
-        // Re-fetch pour le formulaire
+
+        // Re-fetch pour le formulaire en cas d'erreur
         $article['libelle']     = $titre;
         $article['description'] = $description;
         $article['contenu']     = $contenu;
@@ -249,7 +282,7 @@ $modifier = function () use ($auteurId) {
 $supprimer = function () use ($auteurId) {
     $id = (int)($_POST['id'] ?? 0);
     if ($id) deleteArticleAuteur($id, $auteurId);
-    header('Location: ' . path('auteur','articles') . '&deleted=1');
+    header('Location: ' . path('auteur','articles') . ['deleted' => '1']);
     exit();
 };
 

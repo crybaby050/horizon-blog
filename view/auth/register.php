@@ -17,14 +17,14 @@
   <p>Rejoignez la communauté HorizonBlog</p>
 </div>
 
-<?php if (!empty($error)): ?>
+<?php if (!empty($errors['global'])): ?>
   <div class="auth-alert auth-alert-err">
     <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#dc2626">
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
-    <?= htmlspecialchars($error) ?>
+    <?= htmlspecialchars($errors['global']) ?>
   </div>
 <?php endif; ?>
 
@@ -38,61 +38,96 @@
   </div>
 <?php endif; ?>
 
-<form method="POST" action="" class="auth-form">
+<form method="POST" action="" class="auth-form" enctype="multipart/form-data">
   <input type="hidden" name="controller" value="auth"/>
   <input type="hidden" name="action"     value="register"/>
 
-  <!-- Nom + Prénom -->
-  <div class="auth-row">
-    <div class="auth-field">
-      <label for="nom">Nom <span class="auth-req">*</span></label>
-      <div class="auth-input-wrap">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        <input type="text" id="nom" name="nom" required
-               placeholder="Votre nom"
-               value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>"/>
+  <!-- Photo de profil — upload redesigné -->
+  <div class="auth-photo-upload <?= !empty($errors['photo']) ? 'auth-field-err' : '' ?>">
+    <input type="file" id="photo" name="photo" accept="image/*"
+           style="display:none" onchange="handlePhotoChange(this)"/>
+    <div class="auth-photo-zone" onclick="document.getElementById('photo').click()">
+      <div class="auth-photo-preview" id="photoPreviewWrap">
+        <div class="auth-photo-placeholder" id="photoPlaceholder">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" width="28" height="28" stroke="#9ca3af">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <img id="photoPreviewImg" src="" alt="Aperçu"
+             style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+      </div>
+      <div class="auth-photo-info">
+        <div class="auth-photo-label">Photo de profil</div>
+        <div class="auth-photo-hint">Cliquez pour choisir · JPG, PNG, WEBP · max 5 Mo</div>
+        <div class="auth-photo-btn" id="photoBtn">Choisir une photo</div>
       </div>
     </div>
-    <div class="auth-field">
-      <label for="prenom">Prénom <span class="auth-req">*</span></label>
-      <div class="auth-input-wrap">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        <input type="text" id="prenom" name="prenom" required
-               placeholder="Votre prénom"
-               value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>"/>
-      </div>
+    <?php if (!empty($errors['photo'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['photo']) ?></span>
+    <?php endif; ?>
+  </div>
+
+  <!-- Nom -->
+  <div class="auth-field <?= !empty($errors['nom']) ? 'auth-field-err' : '' ?>">
+    <label for="nom">Nom <span class="auth-req">*</span></label>
+    <div class="auth-input-wrap">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <input type="text" id="nom" name="nom"
+             placeholder="Votre nom"
+             value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>"/>
     </div>
+    <?php if (!empty($errors['nom'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['nom']) ?></span>
+    <?php endif; ?>
+  </div>
+
+  <!-- Prénom -->
+  <div class="auth-field <?= !empty($errors['prenom']) ? 'auth-field-err' : '' ?>">
+    <label for="prenom">Prénom <span class="auth-req">*</span></label>
+    <div class="auth-input-wrap">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <input type="text" id="prenom" name="prenom"
+             placeholder="Votre prénom"
+             value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>"/>
+    </div>
+    <?php if (!empty($errors['prenom'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['prenom']) ?></span>
+    <?php endif; ?>
   </div>
 
   <!-- Email -->
-  <div class="auth-field">
+  <div class="auth-field <?= !empty($errors['email']) ? 'auth-field-err' : '' ?>">
     <label for="email">Adresse e-mail <span class="auth-req">*</span></label>
     <div class="auth-input-wrap">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
         <polyline points="22,6 12,13 2,6"/>
       </svg>
-      <input type="email" id="email" name="email" required
+      <input type="email" id="email" name="email"
              placeholder="vous@exemple.com"
              value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"/>
     </div>
+    <?php if (!empty($errors['email'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['email']) ?></span>
+    <?php endif; ?>
   </div>
 
   <!-- Mot de passe -->
-  <div class="auth-field">
+  <div class="auth-field <?= !empty($errors['mot_de_passe']) ? 'auth-field-err' : '' ?>">
     <label for="mot_de_passe">Mot de passe <span class="auth-req">*</span></label>
     <div class="auth-input-wrap">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
-      <input type="password" id="mot_de_passe" name="mot_de_passe" required
+      <input type="password" id="mot_de_passe" name="mot_de_passe"
              placeholder="Minimum 6 caractères"/>
       <button type="button" class="auth-toggle-pwd" onclick="togglePassword('mot_de_passe', this)" tabindex="-1">
         <svg class="eye-show" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#9ca3af">
@@ -105,17 +140,20 @@
         </svg>
       </button>
     </div>
+    <?php if (!empty($errors['mot_de_passe'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['mot_de_passe']) ?></span>
+    <?php endif; ?>
   </div>
 
-  <!-- Confirmer mot de passe -->
-  <div class="auth-field">
+  <!-- Confirmation mot de passe -->
+  <div class="auth-field <?= !empty($errors['confirm_mot_de_passe']) ? 'auth-field-err' : '' ?>">
     <label for="confirm_mot_de_passe">Confirmer le mot de passe <span class="auth-req">*</span></label>
     <div class="auth-input-wrap">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
-      <input type="password" id="confirm_mot_de_passe" name="confirm_mot_de_passe" required
+      <input type="password" id="confirm_mot_de_passe" name="confirm_mot_de_passe"
              placeholder="Répétez votre mot de passe"/>
       <button type="button" class="auth-toggle-pwd" onclick="togglePassword('confirm_mot_de_passe', this)" tabindex="-1">
         <svg class="eye-show" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#9ca3af">
@@ -128,6 +166,9 @@
         </svg>
       </button>
     </div>
+    <?php if (!empty($errors['confirm_mot_de_passe'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['confirm_mot_de_passe']) ?></span>
+    <?php endif; ?>
   </div>
 
   <button type="submit" class="auth-submit">
@@ -150,3 +191,22 @@
     Retour au blog
   </a>
 </div>
+
+<script>
+function handlePhotoChange(input) {
+    const placeholder = document.getElementById('photoPlaceholder');
+    const previewImg  = document.getElementById('photoPreviewImg');
+    const btn         = document.getElementById('photoBtn');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+            placeholder.style.display = 'none';
+            btn.textContent = 'Changer la photo';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>

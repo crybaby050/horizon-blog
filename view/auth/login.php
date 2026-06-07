@@ -16,14 +16,14 @@
   <p>Accédez à votre compte HorizonBlog</p>
 </div>
 
-<?php if (!empty($error)): ?>
+<?php if (!empty($errors['global'])): ?>
   <div class="auth-alert auth-alert-err">
     <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#dc2626">
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
-    <?= htmlspecialchars($error) ?>
+    <?= htmlspecialchars($errors['global']) ?>
   </div>
 <?php endif; ?>
 
@@ -33,18 +33,18 @@
 
   <!-- Type de compte -->
   <div class="auth-type-tabs">
-    <label class="auth-type-tab">
+    <label class="auth-type-tab active" id="tab-lecteur">
       <input type="radio" name="user_type" value="lecteur" checked
-             onchange="document.querySelector('.auth-type-tab.active').classList.remove('active');this.closest('.auth-type-tab').classList.add('active')"/>
+             onchange="switchTab('lecteur')"/>
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
       </svg>
       Lecteur
     </label>
-    <label class="auth-type-tab">
+    <label class="auth-type-tab" id="tab-auteur">
       <input type="radio" name="user_type" value="auteur"
-             onchange="document.querySelector('.auth-type-tab.active').classList.remove('active');this.closest('.auth-type-tab').classList.add('active')"/>
+             onchange="switchTab('auteur')"/>
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15">
         <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
       </svg>
@@ -53,7 +53,7 @@
   </div>
 
   <!-- Email -->
-  <div class="auth-field">
+  <div class="auth-field <?= !empty($errors['email']) ? 'auth-field-err' : '' ?>">
     <label for="email">Adresse e-mail</label>
     <div class="auth-input-wrap">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
@@ -62,21 +62,22 @@
       </svg>
       <input type="email" id="email" name="email"
              value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-             placeholder="vous@exemple.com"
-             required autofocus/>
+             placeholder="vous@exemple.com"/>
     </div>
+    <?php if (!empty($errors['email'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['email']) ?></span>
+    <?php endif; ?>
   </div>
 
   <!-- Mot de passe -->
-  <div class="auth-field">
+  <div class="auth-field <?= !empty($errors['mot_de_passe']) ? 'auth-field-err' : '' ?>">
     <label for="mot_de_passe">Mot de passe</label>
     <div class="auth-input-wrap">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
-      <input type="password" id="mot_de_passe" name="mot_de_passe"
-             placeholder="••••••••" required/>
+      <input type="password" id="mot_de_passe" name="mot_de_passe" placeholder="••••••••"/>
       <button type="button" class="auth-toggle-pwd" onclick="togglePassword('mot_de_passe', this)" tabindex="-1">
         <svg class="eye-show" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#9ca3af">
           <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
@@ -88,6 +89,9 @@
         </svg>
       </button>
     </div>
+    <?php if (!empty($errors['mot_de_passe'])): ?>
+      <span class="auth-field-msg"><?= htmlspecialchars($errors['mot_de_passe']) ?></span>
+    <?php endif; ?>
   </div>
 
   <button type="submit" class="auth-submit">
@@ -109,3 +113,10 @@
     Retour au blog
   </a>
 </div>
+
+<script>
+function switchTab(type) {
+    document.getElementById('tab-lecteur').classList.toggle('active', type === 'lecteur');
+    document.getElementById('tab-auteur').classList.toggle('active', type === 'auteur');
+}
+</script>

@@ -1,5 +1,5 @@
 <?php
-require_once ROOT . "/model/admin/articleAdminModel.php";
+require_once ROOT . "/model/admin/articleModel.php";
 
 $article_admin = function () {
     if (session_status() === PHP_SESSION_NONE) session_start();

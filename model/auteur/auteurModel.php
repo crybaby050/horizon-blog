@@ -269,18 +269,13 @@ function deleteCommentaireAuteur(int $commentaireId, int $auteurId, int $article
  * Signaler un commentaire.
  */
 function signalerCommentaire(int $commentaireId, int $signaleurId, string $typeSignaleur, string $raison, string $description): void {
-    // Table signalement si elle existe — sinon on ignore silencieusement
-    try {
-        $col = $typeSignaleur === 'auteur' ? 'auteur_id' : 'lecteur_id';
-        $sql = "INSERT INTO signalement (commentaire_id, $col, raison, description, date)
-                VALUES (:com_id, :signaleur_id, :raison, :description, NOW())";
-        executeUpdate($sql, [
-            ':com_id'       => $commentaireId,
-            ':signaleur_id' => $signaleurId,
-            ':raison'       => $raison,
-            ':description'  => $description,
-        ]);
-    } catch (\Throwable $e) {
-        // Silently ignore if table doesn't exist
-    }
+    $col = $typeSignaleur === 'auteur' ? 'auteur_id' : 'lecteur_id';
+    $sql = "INSERT INTO signalement (commentaire_id, $col, libelle, description, date_creation, statut)
+            VALUES (:com_id, :signaleur_id, :libelle, :description, NOW(), 'Non traiter')";
+    executeUpdate($sql, [
+        ':com_id'       => $commentaireId,
+        ':signaleur_id' => $signaleurId,
+        ':libelle'      => $raison,
+        ':description'  => $description,
+    ]);
 }

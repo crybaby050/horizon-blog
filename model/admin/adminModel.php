@@ -219,33 +219,53 @@ function deleteLecteurAdmin(int $id): void {
 
 /* ════════ SIGNALEMENTS ════════ */
 
-function countAllSignalements(string $statut = '', string $search = ''): int {
+function countAllSignalements(string $statut = '', string $search = '', string $type = ''): int {
     $where = []; $params = [];
-    if ($statut !== '') { $where[] = "statut = :statut"; $params[':statut'] = $statut; }
-    if ($search !== '') { $where[] = "libelle ILIKE :s"; $params[':s'] = '%'.$search.'%'; }
-    $sql = "SELECT COUNT(*) AS total FROM signalement"
+    if ($statut !== '') { $where[] = "s.statut = :statut"; $params[':statut'] = $statut; }
+    if ($search !== '') { $where[] = "s.libelle ILIKE :s"; $params[':s'] = '%'.$search.'%'; }
+    if ($type === 'article')     { $where[] = "s.commentaire_id IS NULL AND s.article_id IS NOT NULL"; }
+    if ($type === 'commentaire') { $where[] = "s.commentaire_id IS NOT NULL"; }
+    $sql = "SELECT COUNT(*) AS total FROM signalement s"
          . (count($where) ? ' WHERE '.implode(' AND ',$where) : '');
     return (int)(executeSelect($sql, $params, true)['total'] ?? 0);
 }
 
-function getAllSignalements(string $statut = '', string $search = '', int $page = 1, int $perPage = 10): array {
+function getAllSignalements(string $statut = '', string $search = '', int $page = 1, int $perPage = 10, string $type = ''): array {
     $where = []; $params = [];
     if ($statut !== '') { $where[] = "s.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "s.libelle ILIKE :sr"; $params[':sr'] = '%'.$search.'%'; }
+    if ($type === 'article')     { $where[] = "s.commentaire_id IS NULL AND s.article_id IS NOT NULL"; }
+    if ($type === 'commentaire') { $where[] = "s.commentaire_id IS NOT NULL"; }
     $params[':limit']  = $perPage;
     $params[':offset'] = ($page - 1) * $perPage;
     $sql = "SELECT s.id, s.libelle, s.description, s.statut, s.date_creation,
-                   s.article_id, s.commentaire_id,
-                   COALESCE(au.prenom||' '||au.nom, le.prenom||' '||le.nom,'Inconnu') AS signaleur,
-                   ar.libelle AS article_libelle
-            FROM signalement s
-            LEFT JOIN auteur  au ON au.id = s.auteur_id
-            LEFT JOIN lecteur le ON le.id = s.lecteur_id
-            LEFT JOIN article ar ON ar.id = s.article_id
-                                 OR ar.id = (SELECT article_id FROM commentaire WHERE id = s.commentaire_id LIMIT 1)"
+               s.article_id, s.commentaire_id,
+               COALESCE(au.prenom||' '||au.nom, le.prenom||' '||le.nom,'Inconnu') AS signaleur,
+               ar.libelle AS article_libelle,
+               com.contenue AS commentaire_contenu
+        FROM signalement s
+        LEFT JOIN auteur  au  ON au.id  = s.auteur_id
+        LEFT JOIN lecteur le  ON le.id  = s.lecteur_id
+        LEFT JOIN article ar  ON ar.id  = s.article_id
+        LEFT JOIN commentaire com ON com.id = s.commentaire_id
+        LEFT JOIN article ar2 ON ar2.id = com.article_id"
           . (count($where) ? ' WHERE '.implode(' AND ',$where) : '')
           . " ORDER BY s.date_creation DESC LIMIT :limit OFFSET :offset";
     return executeSelect($sql, $params);
+}
+
+// Invalider un article + marquer le signalement comme traité
+function invaliderArticleEtTraiter(int $signalementId, int $articleId): void {
+    executeUpdate("UPDATE article     SET statut = 'Invalide' WHERE id = :id",   [':id' => $articleId]);
+    executeUpdate("UPDATE signalement SET statut = 'Traiter'  WHERE id = :id",   [':id' => $signalementId]);
+}
+
+// Supprimer commentaire + marquer le signalement comme traité
+function supprimerCommentaireEtTraiter(int $signalementId, int $commentaireId): void {
+    deleteCommentaireAdmin($commentaireId); // supprime aussi les signalements liés à ce commentaire
+    // Le signalement lui-même a été supprimé en cascade, donc on ne fait rien de plus
+    // Mais si tu n'as pas de CASCADE en base, on le supprime manuellement :
+    executeUpdate("DELETE FROM signalement WHERE id = :id", [':id' => $signalementId]);
 }
 
 function updateStatutSignalement(int $id, string $statut): void {
@@ -254,7 +274,7 @@ function updateStatutSignalement(int $id, string $statut): void {
 }
 
 function deleteSignalement(int $id): void {
-    executeUpdate("DELETE FROM signalement WHERE id = :id", [':id'=>$id]);
+    executeUpdate("DELETE FROM signalement WHERE id = :id", [':id' => $id]);
 }
 
 function getNbSignalementsNonTraites(): int {

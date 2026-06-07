@@ -27,14 +27,18 @@ $login = function () {
         exit();
     }
 
-    $error = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $email = trim($_POST['email']        ?? '');
-        $mdp   = trim($_POST['mot_de_passe'] ?? '');
+    $errors = [];
 
-        if (empty($email) || empty($mdp)) {
-            $error = 'Veuillez remplir tous les champs.';
-        } else {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $errors = validate($_POST, [
+            'email'        => ['required', 'email'],
+            'mot_de_passe' => ['required'],
+        ]);
+
+        if (empty($errors)) {
+            $email = trim($_POST['email'] ?? '');
+            $mdp   = trim($_POST['mot_de_passe'] ?? '');
+
             $admin = loginAdmin($email, $mdp);
             if ($admin) {
                 $_SESSION['admin'] = [
@@ -46,13 +50,12 @@ $login = function () {
                 header('Location: ' . path('admin', 'dashboard'));
                 exit();
             } else {
-                $error = 'Email ou mot de passe incorrect.';
+                $errors['global'] = 'Email ou mot de passe incorrect.';
             }
         }
     }
 
-    // Vue login sans layout
-    extract(compact('error'));
+    extract(compact('errors'));
     require_once ROOT . "view/admin/login.php";
 };
 

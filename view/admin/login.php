@@ -69,62 +69,70 @@
         <p>Entrez vos identifiants pour accéder au panneau d'administration.</p>
       </div>
 
-      <?php if (!empty($error)): ?>
-        <div class="adm-login-error">
-          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#dc2626">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <?= htmlspecialchars($error) ?>
-        </div>
-      <?php endif; ?>
+      <!-- Erreur globale -->
+<?php if (!empty($errors['global'])): ?>
+  <div class="adm-login-error">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#dc2626">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <?= htmlspecialchars($errors['global']) ?>
+  </div>
+<?php endif; ?>
 
-      <form method="POST" action="<?= path('admin','login') ?>" class="adm-login-form">
-        <input type="hidden" name="controller" value="admin"/>
-        <input type="hidden" name="action"     value="login"/>
+<form method="POST" action="<?= path('admin','login') ?>" class="adm-login-form">
+  <input type="hidden" name="controller" value="admin"/>
+  <input type="hidden" name="action"     value="login"/>
 
-        <div class="adm-login-field">
-          <label for="adm-email">Adresse e-mail</label>
-          <div class="adm-login-input-wrap">
-            <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            <input type="email" id="adm-email" name="email"
-                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                   placeholder="admin@horizonblog.com"
-                   required autofocus/>
-          </div>
-        </div>
+  <!-- Email -->
+  <div class="adm-login-field <?= !empty($errors['email']) ? 'adm-login-field-err' : '' ?>">
+    <label for="adm-email">Adresse e-mail</label>
+    <div class="adm-login-input-wrap <?= !empty($errors['email']) ? 'adm-input-err' : '' ?>">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <input type="email" id="adm-email" name="email"
+             value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+             placeholder="admin@horizonblog.com"
+             autofocus/>
+    </div>
+    <?php if (!empty($errors['email'])): ?>
+      <span class="adm-field-msg"><?= htmlspecialchars($errors['email']) ?></span>
+    <?php endif; ?>
+  </div>
 
-        <div class="adm-login-field">
-          <label for="adm-mdp">Mot de passe</label>
-          <div class="adm-login-input-wrap">
-            <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <input type="password" id="adm-mdp" name="mot_de_passe"
-                   placeholder="••••••••"
-                   required/>
-            <button type="button" class="adm-toggle-pwd" onclick="admTogglePwd(this)" tabindex="-1">
-              <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#9ca3af">
-                <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+  <!-- Mot de passe -->
+  <div class="adm-login-field <?= !empty($errors['mot_de_passe']) ? 'adm-login-field-err' : '' ?>">
+    <label for="adm-mdp">Mot de passe</label>
+    <div class="adm-login-input-wrap <?= !empty($errors['mot_de_passe']) ? 'adm-input-err' : '' ?>">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="16" height="16" stroke="#9ca3af">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <input type="password" id="adm-mdp" name="mot_de_passe"
+             placeholder="••••••••"/>
+      <button type="button" class="adm-toggle-pwd" onclick="admTogglePwd(this)" tabindex="-1">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#9ca3af">
+          <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <?php if (!empty($errors['mot_de_passe'])): ?>
+      <span class="adm-field-msg"><?= htmlspecialchars($errors['mot_de_passe']) ?></span>
+    <?php endif; ?>
+  </div>
 
-        <button type="submit" class="adm-login-submit">
-          <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="15" height="15" stroke="white">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>
-          Se connecter
-        </button>
-      </form>
+  <button type="submit" class="adm-login-submit">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="15" height="15" stroke="white">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+      <polyline points="10 17 15 12 10 7"/>
+      <line x1="15" y1="12" x2="3" y2="12"/>
+    </svg>
+    Se connecter
+  </button>
+</form>
 
       <a href="<?= path('lecteur','home') ?>" class="adm-login-back">
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" width="13" height="13">

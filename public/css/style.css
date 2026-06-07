@@ -1472,3 +1472,17 @@ footer a:hover { color: var(--green); }
 .auth-photo-zone:hover .auth-photo-btn {
     background: var(--green-dark);
 }
+
+
+.adm-input-err {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.08) !important;
+}
+
+.adm-field-msg {
+    display: block;
+    color: #dc2626;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    font-weight: 500;
+}

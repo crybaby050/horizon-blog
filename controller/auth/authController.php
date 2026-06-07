@@ -1,112 +1,100 @@
 <?php
 require_once ROOT . "/model/auth/authModel.php";
 
-// Démarrer la session si pas déjà fait
-/*if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}*/
-
-/* ── FORMULAIRE INSCRIPTION ── */
+/* ── INSCRIPTION ── */
 $register = function () {
-    $error = '';
+    $errors  = [];
     $success = '';
-    
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $nom     = trim($_POST['nom'] ?? '');
-        $prenom  = trim($_POST['prenom'] ?? '');
-        $email   = trim($_POST['email'] ?? '');
-        $mdp     = $_POST['mot_de_passe'] ?? '';
-        $mdpConfirm = $_POST['confirm_mot_de_passe'] ?? '';
-        
-        // Validation nom (2-50 caractères, lettres et tirets)
-        if (!preg_match('/^[a-zA-ZÀ-ÿ-]{2,50}$/', $nom)) {
-            $error = "Le nom doit contenir 2 à 50 caractères (lettres et tirets uniquement).";
+        $errors = validate($_POST, [
+            'nom'            => ['required', 'min:2', 'max:50', 'alpha'],
+            'prenom'         => ['required', 'min:2', 'max:50', 'alpha'],
+            'email'          => ['required', 'email', 'unique:lecteur:email'],
+            'mot_de_passe'   => ['required', 'min:6', 'confirmed'],
+        ], $_FILES);
+
+        // Upload photo (optionnel)
+        $photoUrl = null;
+        if (!empty($_FILES['photo']['name']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $photoUrl = uploadImage($_FILES['photo']);
+            if ($photoUrl === false) {
+                $errors['photo'] = 'Format image non supporté ou fichier trop lourd (max 5 Mo).';
+            }
         }
-        // Validation prénom (2-50 caractères)
-        elseif (!preg_match('/^[a-zA-ZÀ-ÿ-]{2,50}$/', $prenom)) {
-            $error = "Le prénom doit contenir 2 à 50 caractères (lettres et tirets uniquement).";
-        }
-        // Validation email
-        elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "L'adresse email n'est pas valide.";
-        }
-        // Validation mot de passe (min 6 caractères)
-        elseif (strlen($mdp) < 6) {
-            $error = "Le mot de passe doit contenir au moins 6 caractères.";
-        }
-        elseif ($mdp !== $mdpConfirm) {
-            $error = "Les mots de passe ne correspondent pas.";
-        }
-        // Vérifier unicité email
-        elseif (emailExists($email)) {
-            $error = "Cet email est déjà utilisé.";
-        }
-        else {
-            if (registerLecteur($nom, $prenom, $email, $mdp)) {
+
+        if (empty($errors)) {
+            $nom    = trim($_POST['nom']);
+            $prenom = trim($_POST['prenom']);
+            $email  = trim($_POST['email']);
+            $mdp    = $_POST['mot_de_passe'];
+
+            if (registerLecteur($nom, $prenom, $email, $mdp, $photoUrl)) {
                 $success = "Inscription réussie ! Vous pouvez maintenant vous connecter.";
+                $_POST   = []; // vider le formulaire
             } else {
-                $error = "Une erreur est survenue lors de l'inscription. Veuillez réessayer.";
+                $errors['global'] = "Une erreur est survenue. Veuillez réessayer.";
             }
         }
     }
-    
-    loadView("auth/register", compact('error', 'success'), 'auth');
+
+    loadView("auth/register", compact('errors', 'success'), 'auth');
 };
 
-/* ── FORMULAIRE CONNEXION ── */
+/* ── CONNEXION ── */
 $login = function () {
-    $error = '';
-    
+    $errors = [];
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $email    = trim($_POST['email'] ?? '');
-        $mdp      = $_POST['mot_de_passe'] ?? '';
-        $userType = $_POST['user_type'] ?? 'lecteur';
-        
-        if (empty($email) || empty($mdp)) {
-            $error = "Veuillez remplir tous les champs.";
-        } else {
-            $user = false;
-            
+        $errors = validate($_POST, [
+            'email'        => ['required', 'email'],
+            'mot_de_passe' => ['required'],
+        ]);
+
+        if (empty($errors)) {
+            $email    = trim($_POST['email']);
+            $mdp      = $_POST['mot_de_passe'];
+            $userType = $_POST['user_type'] ?? 'lecteur';
+            $user     = false;
+
             if ($userType === 'lecteur') {
                 $user = loginLecteur($email, $mdp);
                 if ($user) {
                     $_SESSION['user'] = [
-                        'id'    => (int) $user['id'],
-                        'type'  => 'lecteur',
-                        'nom'   => $user['nom'],
-                        'prenom'=> $user['prenom'],
-                        'email' => $user['email']
+                        'id'     => (int)$user['id'],
+                        'type'   => 'lecteur',
+                        'nom'    => $user['nom'],
+                        'prenom' => $user['prenom'],
+                        'email'  => $user['email'],
+                        'photo'  => $user['photo'] ?? null,
                     ];
                 }
-            } 
-            elseif ($userType === 'auteur') {
+            } elseif ($userType === 'auteur') {
                 $user = loginAuteur($email, $mdp);
                 if ($user) {
                     $_SESSION['user'] = [
-                        'id'    => (int) $user['id'],
-                        'type'  => 'auteur',
-                        'nom'   => $user['nom'],
-                        'prenom'=> $user['prenom'],
-                        'email' => $user['email']
+                        'id'     => (int)$user['id'],
+                        'type'   => 'auteur',
+                        'nom'    => $user['nom'],
+                        'prenom' => $user['prenom'],
+                        'email'  => $user['email'],
                     ];
                 }
             }
-            
+
             if ($user) {
-    if ($userType === 'auteur') {
-        header("Location: " . path('auteur', 'dashboard'));
-    } else {
-        header("Location: " . path('lecteur', 'home'));
-    }
-    exit();
-}
+                header("Location: " . path($userType === 'auteur' ? 'auteur' : 'lecteur', $userType === 'auteur' ? 'dashboard' : 'home'));
+                exit();
+            } else {
+                $errors['global'] = "Email ou mot de passe incorrect.";
+            }
         }
     }
-    
-    loadView("auth/login", compact('error'), 'auth');
+
+    loadView("auth/login", compact('errors'), 'auth');
 };
 
-/* ── DECONNEXION ── */
+/* ── DÉCONNEXION ── */
 $logout = function () {
     $_SESSION = [];
     session_destroy();
@@ -118,7 +106,7 @@ $logout = function () {
 $actions = [
     "register" => $register,
     "login"    => $login,
-    "logout"   => $logout
+    "logout"   => $logout,
 ];
 
 $action = $_REQUEST["action"] ?? "login";

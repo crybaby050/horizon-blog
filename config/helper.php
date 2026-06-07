@@ -131,3 +131,122 @@ function getCouleurCategorie(string $icone): string {
         default         => 'var(--green)',
     };
 }
+
+/**
+ * Valide les données d'un formulaire selon des règles définies.
+ * Règles disponibles : required, min:N, max:N, alpha, email, confirmed, unique:table:colonne
+ */
+function validate(array $data, array $rules, array $files = []): array {
+    $errors = [];
+    $labels = [
+        'nom'                  => 'Le nom',
+        'prenom'               => 'Le prénom',
+        'email'                => 'L\'email',
+        'mot_de_passe'         => 'Le mot de passe',
+        'confirm_mot_de_passe' => 'La confirmation',
+        'titre'                => 'Le titre',
+        'description'          => 'La description',
+        'contenu'              => 'Le contenu',
+        'photo'                => 'La photo',
+    ];
+
+    foreach ($rules as $field => $fieldRules) {
+        $value  = trim($data[$field] ?? '');
+        $label  = $labels[$field] ?? ucfirst($field);
+        $isFile = isset($files[$field]);
+
+        foreach ($fieldRules as $rule) {
+            // Sépare la règle et sa valeur ex: min:6
+            [$ruleName, $ruleVal] = array_pad(explode(':', $rule, 2), 2, null);
+
+            switch ($ruleName) {
+                case 'required':
+                    if ($isFile) {
+                        if (empty($files[$field]['name']) || $files[$field]['error'] === UPLOAD_ERR_NO_FILE) {
+                            $errors[$field] = "$label est obligatoire.";
+                        }
+                    } elseif ($value === '') {
+                        $errors[$field] = "$label est obligatoire.";
+                    }
+                    break;
+
+                case 'min':
+                    if (isset($errors[$field])) break;
+                    if (strlen($value) < (int)$ruleVal) {
+                        $errors[$field] = "$label doit contenir au moins $ruleVal caractères.";
+                    }
+                    break;
+
+                case 'max':
+                    if (isset($errors[$field])) break;
+                    if (strlen($value) > (int)$ruleVal) {
+                        $errors[$field] = "$label ne doit pas dépasser $ruleVal caractères.";
+                    }
+                    break;
+
+                case 'alpha':
+                    if (isset($errors[$field])) break;
+                    if ($value !== '' && !preg_match('/^[a-zA-ZÀ-ÿ\- ]+$/', $value)) {
+                        $errors[$field] = "$label ne doit contenir que des lettres.";
+                    }
+                    break;
+
+                case 'email':
+                    if (isset($errors[$field])) break;
+                    if ($value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        $errors[$field] = "$label n'est pas valide.";
+                    }
+                    break;
+
+                case 'confirmed':
+                    if (isset($errors[$field])) break;
+                    $confirmField = $field . '_confirm';
+                    // Accepte aussi confirm_mot_de_passe
+                    $confirmValue = trim($data['confirm_' . $field] ?? $data[$confirmField] ?? '');
+                    if ($value !== $confirmValue) {
+                        $errors[$field] = "Les mots de passe ne correspondent pas.";
+                    }
+                    break;
+
+                case 'unique':
+                    if (isset($errors[$field])) break;
+                    // unique:table:colonne
+                    [$table, $col] = array_pad(explode(':', $ruleVal ?? '', 2), 2, $field);
+                    if ($value !== '') {
+                        $count = executeSelect(
+                            "SELECT COUNT(*) AS total FROM $table WHERE $col = :v",
+                            [':v' => $value], true
+                        )['total'] ?? 0;
+                        if ((int)$count > 0) {
+                            $errors[$field] = "$label est déjà utilisé.";
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    return $errors;
+}
+
+
+// Fonction utilitaire upload image
+function uploadImage(array $file): string|false {
+    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    $ext     = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','image/gif'=>'gif'];
+
+    if ($file['error'] !== UPLOAD_ERR_OK)              return false;
+    if (!in_array($file['type'], $allowed))            return false;
+    if ($file['size'] > 5 * 1024 * 1024)              return false;
+
+    $mime = mime_content_type($file['tmp_name']);
+    if (!in_array($mime, $allowed))                    return false;
+
+    $extension = $ext[$mime];
+    $filename  = uniqid('img_', true) . '.' . $extension;
+    $dest      = ROOT . 'public/uploads/' . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
+
+    return 'uploads/' . $filename; // chemin relatif stocké en base
+}

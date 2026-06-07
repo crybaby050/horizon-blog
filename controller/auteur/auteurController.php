@@ -5,26 +5,6 @@ require_once ROOT . "model/auteur/auteurModel.php";
 var_dump($_SESSION['utilisateur']['type'] === 'auteur');
 die();*/
 
-// Fonction utilitaire upload image
-function uploadImage(array $file): string|false {
-    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    $ext     = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','image/gif'=>'gif'];
-
-    if ($file['error'] !== UPLOAD_ERR_OK)              return false;
-    if (!in_array($file['type'], $allowed))            return false;
-    if ($file['size'] > 5 * 1024 * 1024)              return false;
-
-    $mime = mime_content_type($file['tmp_name']);
-    if (!in_array($mime, $allowed))                    return false;
-
-    $extension = $ext[$mime];
-    $filename  = uniqid('img_', true) . '.' . $extension;
-    $dest      = ROOT . 'public/uploads/' . $filename;
-
-    if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
-
-    return 'uploads/' . $filename; // chemin relatif stocké en base
-}
 
 $auteurId = null;
 if (!empty($_SESSION['user']) && $_SESSION['user']['type'] === 'auteur') {

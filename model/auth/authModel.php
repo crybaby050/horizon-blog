@@ -16,35 +16,32 @@ function emailExists(string $email): bool {
 /**
  * Inscrit un nouveau lecteur
  */
-function registerLecteur(string $nom, string $prenom, string $email, string $mot_de_passe): bool {
-    $sql = "INSERT INTO lecteur (nom, prenom, email, mot_de_passe, statut, admin)
-            VALUES (:nom, :prenom, :email, :mot_de_passe, 'Actif', 1)";
-    
+function registerLecteur(string $nom, string $prenom, string $email, string $mot_de_passe, ?string $photo = null): bool {
+    $sql = "INSERT INTO lecteur (nom, prenom, email, mot_de_passe, photo, statut, admin)
+            VALUES (:nom, :prenom, :email, :mot_de_passe, :photo, 'Actif', 1)";
     try {
         executeUpdate($sql, [
-            ':nom'   => $nom,
-            ':prenom'=> $prenom,
-            ':email' => $email,
-            ':mot_de_passe'=> $mot_de_passe
+            ':nom'          => $nom,
+            ':prenom'       => $prenom,
+            ':email'        => $email,
+            ':mot_de_passe' => $mot_de_passe,
+            ':photo'        => $photo,
         ]);
         return true;
     } catch (Exception $e) {
-    var_dump($e->getMessage());
-    return false;
-}
+        return false;
+    }
 }
 
 /**
  * Connecte un lecteur par email/mot de passe
  */
 function loginLecteur(string $email, string $motDePasse): array|false {
-    $sql = "SELECT id, nom, prenom, email, statut
+    $sql = "SELECT id, nom, prenom, email, statut, photo
             FROM lecteur
             WHERE email = :email AND mot_de_passe = :mdp AND statut = 'Actif'";
-    
     return executeSelect($sql, [':email' => $email, ':mdp' => $motDePasse], true);
 }
-
 /**
  * Connecte un auteur par email/mot de passe
  */

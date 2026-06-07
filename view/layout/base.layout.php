@@ -45,10 +45,20 @@
     <?php if (isset($_SESSION['user'])): 
         $user = $_SESSION['user'];
         $initiales = strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1));
+        $photo = $user['photo'] ?? null;
+        $photoUrl = $photo
+            ? (str_starts_with($photo, 'http') ? $photo : WEBROOT . $photo)
+            : null;
     ?>
         <div class="user-menu" id="userMenu">
             <button class="user-avatar" onclick="toggleUserDropdown()">
-                <span class="user-initials"><?= htmlspecialchars($initiales) ?></span>
+                <?php if ($photoUrl): ?>
+                    <img src="<?= htmlspecialchars($photoUrl) ?>"
+                         alt="<?= htmlspecialchars($user['prenom']) ?>"
+                         style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
+                <?php else: ?>
+                    <span class="user-initials"><?= htmlspecialchars($initiales) ?></span>
+                <?php endif; ?>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -90,9 +100,19 @@
     <?php if (isset($_SESSION['user'])): 
         $user = $_SESSION['user'];
         $initiales = strtoupper(substr($user['prenom'], 0, 1) . substr($user['nom'], 0, 1));
+        $photo = $user['photo'] ?? null;
+        $photoUrl = $photo
+            ? (str_starts_with($photo, 'http') ? $photo : WEBROOT . $photo)
+            : null;
     ?>
         <div class="mobile-user-info">
-            <div class="mobile-user-avatar"><?= htmlspecialchars($initiales) ?></div>
+            <?php if ($photoUrl): ?>
+                <img src="<?= htmlspecialchars($photoUrl) ?>"
+                     alt="<?= htmlspecialchars($user['prenom']) ?>"
+                     style="width:56px;height:56px;border-radius:50%;object-fit:cover;margin:0 auto 10px;display:block;border:2px solid var(--green);"/>
+            <?php else: ?>
+                <div class="mobile-user-avatar"><?= htmlspecialchars($initiales) ?></div>
+            <?php endif; ?>
             <div class="mobile-user-name"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></div>
             <div class="mobile-user-email"><?= htmlspecialchars($user['email']) ?></div>
             <div class="mobile-user-badge <?= $user['type'] === 'auteur' ? 'badge-auteur' : 'badge-lecteur' ?>">

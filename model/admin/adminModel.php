@@ -69,16 +69,15 @@ function getSignalementsRecents(int $limit = 5): array {
 /* ════════ ARTICLES ════════ */
 
 function countAllArticles(string $statut = '', string $search = ''): int {
-    $where = []; $params = [];
+    $where = ["a.statut != 'Inactif'"]; $params = [];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :s"; $params[':s'] = '%'.$search.'%'; }
-    $sql = "SELECT COUNT(*) AS total FROM article a"
-         . (count($where) ? ' WHERE '.implode(' AND ',$where) : '');
+    $sql = "SELECT COUNT(*) AS total FROM article a WHERE ".implode(' AND ',$where);
     return (int)(executeSelect($sql, $params, true)['total'] ?? 0);
 }
 
 function getAllArticles(string $statut = '', string $search = '', int $page = 1, int $perPage = 10): array {
-    $where = []; $params = [];
+    $where = ["a.statut != 'Inactif'"]; $params = [];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :s"; $params[':s'] = '%'.$search.'%'; }
     $params[':limit']  = $perPage;
@@ -89,7 +88,7 @@ function getAllArticles(string $statut = '', string $search = '', int $page = 1,
             FROM article a
             JOIN auteur au ON au.id = a.auteur_id
             LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1"
-          . (count($where) ? ' WHERE '.implode(' AND ',$where) : '')
+          . " WHERE ".implode(' AND ',$where)
           . " ORDER BY a.date_creation DESC LIMIT :limit OFFSET :offset";
     return executeSelect($sql, $params);
 }
@@ -280,4 +279,57 @@ function deleteSignalement(int $id): void {
 function getNbSignalementsNonTraites(): int {
     $res = executeSelect("SELECT COUNT(*) AS total FROM signalement WHERE statut = 'Non traiter'", [], true);
     return (int)($res['total'] ?? 0);
+}
+
+/**
+ * Soft delete : passe l'article en statut "Inactif".
+ */
+function adminSoftDeleteArticle(int $id): void {
+    executeUpdate(
+        "UPDATE article SET statut = 'Inactif', date_dernier_modification = NOW() WHERE id = :id",
+        [':id' => $id]
+    );
+}
+
+/**
+ * Restaure un article depuis la corbeille (remet "En attente").
+ */
+function adminRestaurerArticle(int $id): void {
+    executeUpdate(
+        "UPDATE article SET statut = 'En attente', date_dernier_modification = NOW()
+         WHERE id = :id AND statut = 'Inactif'",
+        [':id' => $id]
+    );
+}
+
+/**
+ * Compte les articles dans la corbeille (admin = tous les auteurs).
+ */
+function adminCountCorbeille(string $search = ''): int {
+    $where  = ["a.statut = 'Inactif'"];
+    $params = [];
+    if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
+    $sql = "SELECT COUNT(*) AS total FROM article a WHERE " . implode(' AND ', $where);
+    return (int)(executeSelect($sql, $params, true)['total'] ?? 0);
+}
+
+/**
+ * Liste paginée des articles dans la corbeille (admin = tous les auteurs).
+ */
+function adminGetCorbeille(string $search = '', int $page = 1, int $perPage = 10): array {
+    $where  = ["a.statut = 'Inactif'"];
+    $params = [];
+    if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
+    $params[':limit']  = $perPage;
+    $params[':offset'] = ($page - 1) * $perPage;
+    $sql = "SELECT a.id, a.libelle, a.statut, a.date_creation, a.date_dernier_modification,
+                   au.prenom || ' ' || au.nom AS auteur,
+                   ai.url AS image_p
+            FROM article a
+            JOIN auteur au ON au.id = a.auteur_id
+            LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
+            WHERE " . implode(' AND ', $where) . "
+            ORDER BY a.date_dernier_modification DESC
+            LIMIT :limit OFFSET :offset";
+    return executeSelect($sql, $params);
 }

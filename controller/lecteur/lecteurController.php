@@ -155,7 +155,7 @@ $detail = function () {
         'currentLecteurId'
     ));
 };
- 
+
 
 /* ── DISPATCH ── */
 $actions = [

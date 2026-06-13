@@ -116,12 +116,6 @@
             <div style="display:flex;align-items:center;gap:12px;">
               <div class="a-card-meta">
                 <div class="a-meta-item">
-                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  <?= $art['vues'] ?? 0 ?>
-                </div>
-                <div class="a-meta-item">
                   <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                   </svg>

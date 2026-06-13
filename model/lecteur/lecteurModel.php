@@ -109,7 +109,8 @@ function getArticlesFiltres(
         a.statut,
         a.date_creation,
         ai.url  AS image_p,
-        au.prenom || ' ' || au.nom AS auteur
+        au.prenom || ' ' || au.nom AS auteur,
+        (SELECT COUNT(*) FROM commentaire c WHERE c.article_id = a.id AND c.statut = 'Actif') AS commentaires
     FROM article a
     LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
     LEFT JOIN auteur au ON au.id = a.auteur_id"

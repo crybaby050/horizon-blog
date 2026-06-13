@@ -80,6 +80,15 @@
         </svg>
         <span>Lecteurs</span>
       </a>
+      <a href="<?= path('admin','corbeille') ?>"
+         class="adm-nav-item <?= ($currentAction??'') === 'corbeille' ? 'active':'' ?>">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        <span>Corbeille</span>
+      </a>
     </div>
 
     <div class="adm-nav-group adm-nav-bottom">
@@ -125,6 +134,7 @@
           'auteurs'      => 'Gestion des auteurs',
           'lecteurs'     => 'Gestion des lecteurs',
           'signalements' => 'Signalements',
+          'corbeille' => 'Corbeille',
         ];
         echo $titles[$currentAction ?? 'dashboard'] ?? 'Administration';
       ?>

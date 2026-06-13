@@ -428,3 +428,11 @@ $imgSim = function(array $art): string {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<?php if (isset($_GET['signal']) && $_GET['signal'] === 'ok'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('Signalement envoyé avec succès. Merci !');
+});
+</script>
+<?php endif; ?>

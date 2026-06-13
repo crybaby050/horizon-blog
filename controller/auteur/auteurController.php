@@ -261,9 +261,41 @@ $modifier = function () use ($auteurId) {
 /* ── SUPPRIMER ARTICLE ── */
 $supprimer = function () use ($auteurId) {
     $id = (int)($_POST['id'] ?? 0);
-    if ($id) deleteArticleAuteur($id, $auteurId);
-    header('Location: ' . path('auteur','articles') . ['deleted' => '1']);
+    if ($id) softDeleteArticleAuteur($id, $auteurId);
+    header('Location: ' . path('auteur', 'articles', ['deleted' => '1']));
     exit();
+};
+
+/* ── CORBEILLE ── */
+$corbeille = function () use ($auteurId) {
+    $search  = trim($_GET['q'] ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 9;
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $id = (int)($_POST['id'] ?? 0);
+
+        if ($postAction === 'restaurer' && $id) {
+            restaurerArticleAuteur($id, $auteurId);
+        }
+        if ($postAction === 'supprimer_def' && $id) {
+            deleteArticleDefinitivement($id, $auteurId);
+        }
+
+        header('Location: ' . path('auteur', 'corbeille', ['q' => $search, 'page' => $page]));
+        exit();
+    }
+
+    $total      = countArticlesCorbeille($auteurId, $search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $articles   = getArticlesCorbeille($auteurId, $search, $page, $perPage);
+    $nbArticlesAuteur = countArticlesAuteur($auteurId);
+
+    loadView("auteur/corbeille", compact(
+        'articles', 'search', 'page', 'totalPages', 'total', 'nbArticlesAuteur'
+    ), "auteur");
 };
 
 /* ── DÉCONNEXION ── */

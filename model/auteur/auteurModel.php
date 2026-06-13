@@ -50,7 +50,7 @@ function getChartVuesParMois(int $auteurId): array {
  * Compte les articles de l'auteur avec filtres optionnels.
  */
 function countArticlesAuteur(int $auteurId, string $statut = '', string $search = ''): int {
-    $where  = ["a.auteur_id = :id"];
+    $where  = ["a.auteur_id = :id", "a.statut != 'Inactif'"];
     $params = [':id' => $auteurId];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
@@ -62,7 +62,7 @@ function countArticlesAuteur(int $auteurId, string $statut = '', string $search 
  * Liste paginée des articles de l'auteur.
  */
 function getArticlesAuteur(int $auteurId, string $statut = '', string $search = '', int $page = 1, int $perPage = 9): array {
-    $where  = ["a.auteur_id = :id"];
+    $where  = ["a.auteur_id = :id", "a.statut != 'Inactif'"];
     $params = [':id' => $auteurId];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
@@ -89,7 +89,7 @@ function getArticleAuteur(int $articleId, int $auteurId): array|false {
         FROM article a
         JOIN auteur au ON au.id = a.auteur_id
         LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
-        WHERE a.id = :id AND a.auteur_id = :auteur_id";
+        WHERE a.id = :id AND a.auteur_id = :auteur_id AND a.statut != 'Inactif'";
     $res = executeSelect($sql, [':id'=>$articleId, ':auteur_id'=>$auteurId], true);
     return $res ?: false;
 }

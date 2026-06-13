@@ -313,6 +313,7 @@ $actions = [
     'detail'     => $detail,
     'modifier'   => $modifier,
     'supprimer'  => $supprimer,
+    'corbeille' => $corbeille,
     'deconnexion'=> $deconnexion,
 ];
 

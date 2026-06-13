@@ -87,7 +87,7 @@ $articles = function () use ($nbSignalementsNonTraites) {
 
         if ($postAction === 'valider'   && $artId) updateStatutArticle($artId, 'Actif');
         if ($postAction === 'invalider' && $artId) updateStatutArticle($artId, 'Invalide');
-        if ($postAction === 'supprimer' && $artId) deleteArticleAdmin($artId);
+        if ($postAction === 'supprimer' && $artId) adminSoftDeleteArticle($artId);
 
         header('Location: ' . path('admin','articles',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
@@ -118,7 +118,7 @@ $article_detail = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'valider')   updateStatutArticle($id, 'Actif');
         if ($postAction === 'invalider') updateStatutArticle($id, 'Invalide');
         if ($postAction === 'supprimer_article') {
-            deleteArticleAdmin($id);
+            adminSoftDeleteArticle($id);
             header('Location: '.path('admin','articles').'&deleted=1');
             exit();
         }

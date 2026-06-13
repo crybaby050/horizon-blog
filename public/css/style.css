@@ -1486,3 +1486,16 @@ footer a:hover { color: var(--green); }
     margin-top: 4px;
     font-weight: 500;
 }
+
+/*probeleme de debordeement*/
+.dc-item-text, .a-card-desc, .a-card-title, .au-art-desc, .au-art-title,
+.adm-signal-card-title, .adm-signal-card-desc {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .filter-label, .filter-chip { display: none; }
+  .filter-search { display: flex !important; margin-left: 0; width: 100%; }
+  .filter-search input { width: 100%; }
+}

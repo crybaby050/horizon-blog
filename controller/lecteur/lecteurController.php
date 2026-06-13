@@ -106,27 +106,26 @@ $detail = function () {
  
         // Signaler un article
         if ($postAction === 'signal_article') {
-    $libelle     = trim($_POST['raison']      ?? 'Autre');
-    $description = trim($_POST['description'] ?? '');
-    if ($libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
-        addSignalement($libelle, $description, $id, null, $currentLecteurId, $currentAuteurId);
-    }
-    header("Location: " . path('lecteur', 'detail', ['id' => $id]));
-    exit();
-}
- 
+            $libelle     = trim($_POST['raison']      ?? 'Autre');
+            $description = trim($_POST['description'] ?? '');
+            if ($libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
+                addSignalement($libelle, $description, $id, null, $currentLecteurId, $currentAuteurId);
+            }
+            header("Location: " . path('lecteur', 'detail', ['id' => $id, 'signal' => 'ok']));
+            exit();
+        }
+
         // Signaler un commentaire
-if ($postAction === 'signal_comment') {
-    $commentId   = (int) ($_POST['comment_id'] ?? 0);
-    $libelle     = trim($_POST['raison']      ?? 'Autre');
-    $description = trim($_POST['description'] ?? '');
-    
-    if ($commentId > 0 && $libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
-        addSignalement($libelle, $description, null, $commentId, $currentLecteurId, $currentAuteurId);
-    }
-    header("Location: " . path('lecteur', 'detail', ['id' => $id]));
-    exit();
-    }
+        if ($postAction === 'signal_comment') {
+            $commentId   = (int) ($_POST['comment_id'] ?? 0);
+            $libelle     = trim($_POST['raison']      ?? 'Autre');
+            $description = trim($_POST['description'] ?? '');
+            if ($commentId > 0 && $libelle !== '' && ($currentAuteurId || $currentLecteurId)) {
+                addSignalement($libelle, $description, null, $commentId, $currentLecteurId, $currentAuteurId);
+            }
+            header("Location: " . path('lecteur', 'detail', ['id' => $id, 'signal' => 'ok']) . "#commentsSection");
+            exit();
+        }
     }
  
     /* ── Données ── */

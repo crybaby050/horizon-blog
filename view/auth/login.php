@@ -27,7 +27,7 @@
   </div>
 <?php endif; ?>
 
-<form method="POST" action="" class="auth-form">
+<form method="POST" action="" class="auth-form" novalidate>
   <input type="hidden" name="controller" value="auth"/>
   <input type="hidden" name="action"     value="login"/>
 

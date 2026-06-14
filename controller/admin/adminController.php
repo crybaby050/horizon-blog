@@ -19,6 +19,7 @@ if (!$isLogin) {
 }
 
 $nbSignalementsNonTraites = !$isLogin ? getNbSignalementsNonTraites() : 0;
+$nbDemandesEnAttente = !$isLogin ? getNbDemandesAuteurEnAttente() : 0;
 
 /* ── LOGIN ── */
 $login = function () {

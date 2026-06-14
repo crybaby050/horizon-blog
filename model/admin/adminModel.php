@@ -333,3 +333,93 @@ function adminGetCorbeille(string $search = '', int $page = 1, int $perPage = 10
             LIMIT :limit OFFSET :offset";
     return executeSelect($sql, $params);
 }
+
+
+/**
+ * Compte les demandes auteur en attente.
+ */
+function getNbDemandesAuteurEnAttente(): int {
+    $res = executeSelect("SELECT COUNT(*) AS total FROM demande_auteur WHERE statut = 'En attente'", [], true);
+    return (int)($res['total'] ?? 0);
+}
+
+/**
+ * Liste les demandes auteur (avec infos du lecteur).
+ */
+function getAllDemandesAuteur(string $statut = '', int $page = 1, int $perPage = 10): array {
+    $where = []; $params = [];
+    if ($statut !== '') { $where[] = "d.statut = :statut"; $params[':statut'] = $statut; }
+    $params[':limit']  = $perPage;
+    $params[':offset'] = ($page - 1) * $perPage;
+    $sql = "SELECT d.id, d.message, d.statut, d.date_demande,
+                   l.id AS lecteur_id, l.nom, l.prenom, l.email, l.photo
+            FROM demande_auteur d
+            JOIN lecteur l ON l.id = d.lecteur_id"
+          . (count($where) ? ' WHERE '.implode(' AND ',$where) : '')
+          . " ORDER BY d.date_demande DESC LIMIT :limit OFFSET :offset";
+    return executeSelect($sql, $params);
+}
+
+function countAllDemandesAuteur(string $statut = ''): int {
+    $where = []; $params = [];
+    if ($statut !== '') { $where[] = "statut = :statut"; $params[':statut'] = $statut; }
+    $sql = "SELECT COUNT(*) AS total FROM demande_auteur"
+         . (count($where) ? ' WHERE '.implode(' AND ',$where) : '');
+    return (int)(executeSelect($sql, $params, true)['total'] ?? 0);
+}
+
+/**
+ * Accepte une demande : transforme le lecteur en auteur.
+ */
+function accepterDemandeAuteur(int $demandeId, int $lecteurId): void {
+    // Récupère les infos du lecteur
+    $lecteur = executeSelect("SELECT * FROM lecteur WHERE id = :id", [':id' => $lecteurId], true);
+    if (!$lecteur) return;
+
+    // Insère dans auteur
+    $sql = "INSERT INTO auteur (nom, prenom, email, mot_de_passe, date_inscription, statut, admin, bio, photo)
+            VALUES (:nom, :prenom, :email, :mdp, CURRENT_DATE, 'Actif', 1, :bio, :photo)
+            RETURNING id";
+    $res = executeSelect($sql, [
+        ':nom'    => $lecteur['nom'],
+        ':prenom' => $lecteur['prenom'],
+        ':email'  => $lecteur['email'],
+        ':mdp'    => $lecteur['mot_de_passe'],
+        ':bio'    => '', // sera mis à jour ensuite avec le message de la demande
+        ':photo'  => $lecteur['photo'],
+    ], true);
+    $nouvelAuteurId = $res['id'] ?? null;
+    if (!$nouvelAuteurId) return;
+
+    // Récupère le message de la demande pour pré-remplir la bio
+    $demande = executeSelect("SELECT message FROM demande_auteur WHERE id = :id", [':id' => $demandeId], true);
+    if ($demande && !empty($demande['message'])) {
+        executeUpdate("UPDATE auteur SET bio = :bio WHERE id = :id",
+            [':bio' => $demande['message'], ':id' => $nouvelAuteurId]);
+    }
+
+    // Migration des commentaires
+    executeUpdate(
+        "UPDATE commentaire SET auteur_id = :auteur_id, lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
+        [':auteur_id' => $nouvelAuteurId, ':lecteur_id' => $lecteurId]
+    );
+
+    // Migration des signalements
+    executeUpdate(
+        "UPDATE signalement SET auteur_id = :auteur_id, lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
+        [':auteur_id' => $nouvelAuteurId, ':lecteur_id' => $lecteurId]
+    );
+
+    // Supprime le lecteur
+    executeUpdate("DELETE FROM lecteur WHERE id = :id", [':id' => $lecteurId]);
+
+    // Marque la demande comme acceptée
+    executeUpdate("UPDATE demande_auteur SET statut = 'Acceptee' WHERE id = :id", [':id' => $demandeId]);
+}
+
+/**
+ * Refuse une demande.
+ */
+function refuserDemandeAuteur(int $demandeId): void {
+    executeUpdate("UPDATE demande_auteur SET statut = 'Refusee' WHERE id = :id", [':id' => $demandeId]);
+}

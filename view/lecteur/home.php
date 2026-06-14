@@ -308,6 +308,8 @@
   </div>
 </section>
 
+<div class="toast" id="toast"></div>
+
 <?php if (isset($_SESSION['user']) && $_SESSION['user']['type'] === 'lecteur'): ?>
 <!-- Modal devenir auteur -->
 <div class="modal-overlay" id="modalDevenirAuteur" onclick="closeModalOutside(event, 'modalDevenirAuteur')">

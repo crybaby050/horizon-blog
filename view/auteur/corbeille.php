@@ -64,32 +64,21 @@
             </span>
             <div class="au-art-actions">
               <!-- Restaurer -->
-              <form method="POST" action="<?= path('auteur','corbeille') ?>" style="display:inline">
-                <input type="hidden" name="controller" value="auteur"/>
-                <input type="hidden" name="action"     value="corbeille"/>
-                <input type="hidden" name="post_action" value="restaurer"/>
-                <input type="hidden" name="id" value="<?= $art['id'] ?>"/>
-                <button class="au-art-btn au-art-btn-view" title="Restaurer">
-                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14">
-                    <polyline points="1 4 1 10 7 10"/>
-                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-                  </svg>
-                </button>
-              </form>
+              <button type="button" class="au-art-btn au-art-btn-view" title="Restaurer"
+                      onclick="openCorbeilleModal('restaurer', <?= $art['id'] ?>, '<?= htmlspecialchars(addslashes($art['libelle'])) ?>')">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+              </button>
               <!-- Supprimer définitivement -->
-              <form method="POST" action="<?= path('auteur','corbeille') ?>" style="display:inline"
-                    onsubmit="return confirm('Supprimer définitivement cet article ? Cette action est irréversible.')">
-                <input type="hidden" name="controller" value="auteur"/>
-                <input type="hidden" name="action"     value="corbeille"/>
-                <input type="hidden" name="post_action" value="supprimer_def"/>
-                <input type="hidden" name="id" value="<?= $art['id'] ?>"/>
-                <button class="au-art-btn au-art-btn-del" title="Supprimer définitivement">
-                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  </svg>
-                </button>
-              </form>
+              <button type="button" class="au-art-btn au-art-btn-del" title="Supprimer définitivement"
+                      onclick="openCorbeilleModal('supprimer_def', <?= $art['id'] ?>, '<?= htmlspecialchars(addslashes($art['libelle'])) ?>')">
+                <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="14" height="14">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -107,4 +96,25 @@
     <?php endif; ?>
   <?php endif; ?>
 
+</div>
+
+<!-- Modal corbeille (restaurer / suppr. définitive) -->
+<div class="au-modal-overlay" id="corbeilleModal">
+  <div class="au-modal">
+    <div class="au-modal-icon-wrap" id="corbeilleModalIconWrap">
+      <svg id="corbeilleModalIcon" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="28" height="28"></svg>
+    </div>
+    <h3 class="au-modal-title" id="corbeilleModalTitle"></h3>
+    <p class="au-modal-sub" id="corbeilleModalSub"></p>
+    <form method="POST" action="<?= path('auteur','corbeille') ?>" id="corbeilleModalForm">
+      <input type="hidden" name="controller" value="auteur"/>
+      <input type="hidden" name="action"     value="corbeille"/>
+      <input type="hidden" name="post_action" id="corbeilleModalAction" value=""/>
+      <input type="hidden" name="id"          id="corbeilleModalId"     value=""/>
+      <div class="au-modal-actions">
+        <button type="button" class="au-modal-cancel" onclick="closeCorbeilleModal()">Annuler</button>
+        <button type="submit" class="au-modal-confirm" id="corbeilleModalConfirm">Confirmer</button>
+      </div>
+    </form>
+  </div>
 </div>

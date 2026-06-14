@@ -160,7 +160,7 @@ $auteurs = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'desactiver'&& $auteurId) updateStatutAuteur($auteurId, 'Inactif');
         if ($postAction === 'supprimer' && $auteurId) deleteAuteurAdmin($auteurId);
 
-        header('Location: '.path('admin','auteur',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        header('Location: '.path('admin','auteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
     }
 
@@ -191,7 +191,7 @@ $lecteurs = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'desactiver'&& $lecteurId) updateStatutLecteur($lecteurId, 'Inactif');
         if ($postAction === 'supprimer' && $lecteurId) deleteLecteurAdmin($lecteurId);
 
-        header('Location: '.path('admin','lecteur',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        header('Location: '.path('admin','lecteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
     }
 

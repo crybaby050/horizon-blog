@@ -54,29 +54,20 @@
             <td><?= date('d/m/Y', strtotime($art['date_dernier_modification'])) ?></td>
             <td>
               <div class="adm-table-actions">
-                <!-- Restaurer -->
-                <form method="POST" action="<?= path('admin','corbeille') ?>" style="display:inline">
-                  <input type="hidden" name="post_action" value="restaurer"/>
-                  <input type="hidden" name="article_id"  value="<?= $art['id'] ?>"/>
-                  <button class="adm-tbl-btn adm-tbl-ok" title="Restaurer">
-                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13">
-                      <polyline points="1 4 1 10 7 10"/>
-                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-                    </svg>
-                  </button>
-                </form>
-                <!-- Supprimer définitivement -->
-                <form method="POST" action="<?= path('admin','corbeille') ?>" style="display:inline"
-                      onsubmit="return confirm('Supprimer définitivement cet article ? Action irréversible.')">
-                  <input type="hidden" name="post_action" value="supprimer_def"/>
-                  <input type="hidden" name="article_id"  value="<?= $art['id'] ?>"/>
-                  <button class="adm-tbl-btn adm-tbl-del" title="Supprimer définitivement">
-                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    </svg>
-                  </button>
-                </form>
+                <button type="button" class="adm-tbl-btn adm-tbl-ok" title="Restaurer"
+                        onclick="openCorbeilleModalAdm('restaurer', <?= $art['id'] ?>, '<?= htmlspecialchars(addslashes($art['libelle'])) ?>')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                  </svg>
+                </button>
+                <button type="button" class="adm-tbl-btn adm-tbl-del" title="Supprimer définitivement"
+                        onclick="openCorbeilleModalAdm('supprimer_def', <?= $art['id'] ?>, '<?= htmlspecialchars(addslashes($art['libelle'])) ?>')">
+                  <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="13" height="13">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  </svg>
+                </button>
               </div>
             </td>
           </tr>
@@ -97,4 +88,23 @@
   </div>
   <?php endif; ?>
 
+</div>
+
+<!-- Modal corbeille admin -->
+<div class="adm-modal-overlay" id="corbeilleModalAdm">
+  <div class="adm-modal">
+    <div class="adm-modal-icon" id="corbeilleModalAdmIconWrap">
+      <svg id="corbeilleModalAdmIcon" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="28" height="28"></svg>
+    </div>
+    <h3 class="adm-modal-title" id="corbeilleModalAdmTitle"></h3>
+    <p class="adm-modal-sub" id="corbeilleModalAdmSub"></p>
+    <form method="POST" action="<?= path('admin','corbeille') ?>" id="corbeilleModalAdmForm">
+      <input type="hidden" name="post_action" id="corbeilleModalAdmAction" value=""/>
+      <input type="hidden" name="article_id"  id="corbeilleModalAdmId"     value=""/>
+      <div class="adm-modal-actions">
+        <button type="button" class="adm-modal-cancel" onclick="closeCorbeilleModalAdm()">Annuler</button>
+        <button type="submit" class="adm-modal-confirm" id="corbeilleModalAdmConfirm">Confirmer</button>
+      </div>
+    </form>
+  </div>
 </div>

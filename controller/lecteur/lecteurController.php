@@ -2,17 +2,31 @@
 require_once ROOT . "/model/lecteur/lecteurModel.php";
 
 /* ── HOME ── */
-$home = function () {
+$home = function () use ($currentLecteurId, $currentAuteurId) {
     $articles = getArticleVisuel();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+
+        if ($postAction === 'demande_auteur' && $currentLecteurId) {
+            $message = trim($_POST['message'] ?? '');
+            $dejaEnCours = getDemandeAuteurEnCours($currentLecteurId);
+            if (!$dejaEnCours && $message !== '') {
+                creerDemandeAuteur($currentLecteurId, $message);
+            }
+            header('Location: ' . path('lecteur','home', ['demande' => 'ok']));
+            exit();
+        }
+    }
 
     foreach ($articles as &$article) {
         $article['categories'] = getCategoriesByArticle((int) $article['id']);
     }
     unset($article);
 
-    $categories = getPrincipalCategorie(); // 4 catégories avec image + icone + nb_articles
+    $categories = getPrincipalCategorie();
+    $demandeEnCours = $currentLecteurId ? getDemandeAuteurEnCours($currentLecteurId) : false;
 
-    loadView("lecteur/home", compact('articles', 'categories'));
+    loadView("lecteur/home", compact('articles', 'categories','demandeEnCours'));
 };
 
 /* ── LISTE DES ARTICLES ── */
@@ -155,6 +169,14 @@ $detail = function () {
         'currentLecteurId'
     ));
 };
+
+if (!empty($_SESSION['user']) && $_SESSION['user']['type'] === 'lecteur') {
+    if (!lecteurExiste((int)$_SESSION['user']['id'])) {
+        unset($_SESSION['user']);
+        header('Location: ' . path('auth','login', ['promu' => '1']));
+        exit();
+    }
+}
 
 
 /* ── DISPATCH ── */

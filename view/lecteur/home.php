@@ -270,15 +270,39 @@
         </div>
       </div>
       <div class="join-cta-row">
-        <button class="join-cta-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="8.5" cy="7" r="4"/>
-            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
-          </svg>
-          S'inscrire gratuitement
-        </button>
-        <button class="join-cta-secondary">Se Connecter</button>
+        <?php if (!isset($_SESSION['user'])): ?>
+          <a href="<?= path('auth','register') ?>" class="join-cta-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            S'inscrire gratuitement
+          </a>
+          <a href="<?= path('auth','login') ?>" class="join-cta-secondary">Se Connecter</a>
+        
+        <?php elseif ($_SESSION['user']['type'] === 'lecteur'): ?>
+          <?php if (!empty($demandeEnCours)): ?>
+            <button class="join-cta-primary" disabled style="opacity:.6;cursor:not-allowed;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+              Demande en cours d'examen
+            </button>
+          <?php else: ?>
+            <button class="join-cta-primary" onclick="openModal('modalDevenirAuteur')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Devenir auteur
+            </button>
+          <?php endif; ?>
+          
+        <?php else: /* auteur connecté */ ?>
+          <a href="<?= path('auteur','dashboard') ?>" class="join-cta-primary">Accéder à mon espace auteur</a>
+        <?php endif; ?>
       </div>
     </div>
   </div>

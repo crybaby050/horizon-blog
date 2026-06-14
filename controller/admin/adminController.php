@@ -87,7 +87,7 @@ $articles = function () use ($nbSignalementsNonTraites) {
 
         if ($postAction === 'valider'   && $artId) updateStatutArticle($artId, 'Actif');
         if ($postAction === 'invalider' && $artId) updateStatutArticle($artId, 'Invalide');
-        if ($postAction === 'supprimer' && $artId) deleteArticleAdmin($artId);
+        if ($postAction === 'supprimer' && $artId) adminSoftDeleteArticle($artId);
 
         header('Location: ' . path('admin','articles',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
@@ -118,7 +118,7 @@ $article_detail = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'valider')   updateStatutArticle($id, 'Actif');
         if ($postAction === 'invalider') updateStatutArticle($id, 'Invalide');
         if ($postAction === 'supprimer_article') {
-            deleteArticleAdmin($id);
+            adminSoftDeleteArticle($id);
             header('Location: '.path('admin','articles').'&deleted=1');
             exit();
         }
@@ -160,7 +160,7 @@ $auteurs = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'desactiver'&& $auteurId) updateStatutAuteur($auteurId, 'Inactif');
         if ($postAction === 'supprimer' && $auteurId) deleteAuteurAdmin($auteurId);
 
-        header('Location: '.path('admin','auteur',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        header('Location: '.path('admin','auteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
     }
 
@@ -191,7 +191,7 @@ $lecteurs = function () use ($nbSignalementsNonTraites) {
         if ($postAction === 'desactiver'&& $lecteurId) updateStatutLecteur($lecteurId, 'Inactif');
         if ($postAction === 'supprimer' && $lecteurId) deleteLecteurAdmin($lecteurId);
 
-        header('Location: '.path('admin','lecteur',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        header('Location: '.path('admin','lecteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
         exit();
     }
 
@@ -257,6 +257,33 @@ $signalements = function () use ($nbSignalementsNonTraites) {
     ), "admin");
 };
 
+/* ── CORBEILLE ── */
+$corbeille = function () use ($nbSignalementsNonTraites) {
+    $search  = trim($_GET['q'] ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $id = (int)($_POST['article_id'] ?? 0);
+
+        if ($postAction === 'restaurer'    && $id) adminRestaurerArticle($id);
+        if ($postAction === 'supprimer_def' && $id) deleteArticleAdmin($id);
+
+        header('Location: '.path('admin','corbeille',['q'=>$search,'page'=>$page]));
+        exit();
+    }
+
+    $total      = adminCountCorbeille($search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $articles   = adminGetCorbeille($search, $page, $perPage);
+
+    loadView("admin/corbeille", compact(
+        'articles','search','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
 /* ── DÉCONNEXION ── */
 $deconnexion = function () {
     unset($_SESSION['admin']);
@@ -273,6 +300,7 @@ $actions = [
     'auteurs'        => $auteurs,
     'lecteurs'       => $lecteurs,
     'signalements'   => $signalements,
+    'corbeille' => $corbeille,
     'deconnexion'    => $deconnexion,
 ];
 

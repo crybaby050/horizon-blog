@@ -109,7 +109,8 @@ function getArticlesFiltres(
         a.statut,
         a.date_creation,
         ai.url  AS image_p,
-        au.prenom || ' ' || au.nom AS auteur
+        au.prenom || ' ' || au.nom AS auteur,
+        (SELECT COUNT(*) FROM commentaire c WHERE c.article_id = a.id AND c.statut = 'Actif') AS commentaires
     FROM article a
     LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
     LEFT JOIN auteur au ON au.id = a.auteur_id"
@@ -302,4 +303,31 @@ function addSignalement(
         ':auteur_id'      => $auteur_id,
     ]);
 }
- 
+
+
+/**
+ * Vérifie si un lecteur a une demande "En attente".
+ */
+function getDemandeAuteurEnCours(int $lecteurId): array|false {
+    $sql = "SELECT id, statut, date_demande FROM demande_auteur
+            WHERE lecteur_id = :id AND statut = 'En attente'
+            ORDER BY date_demande DESC LIMIT 1";
+    return executeSelect($sql, [':id' => $lecteurId], true) ?: false;
+}
+
+/**
+ * Crée une demande pour devenir auteur.
+ */
+function creerDemandeAuteur(int $lecteurId, string $message): void {
+    $sql = "INSERT INTO demande_auteur (lecteur_id, message, statut, date_demande)
+            VALUES (:lecteur_id, :message, 'En attente', NOW())";
+    executeUpdate($sql, [':lecteur_id' => $lecteurId, ':message' => $message]);
+}
+
+/**
+ * Vérifie si un lecteur existe encore (utilisé pour détecter la transformation en auteur).
+ */
+function lecteurExiste(int $id): bool {
+    $sql = "SELECT id FROM lecteur WHERE id = :id";
+    return (bool) executeSelect($sql, [':id' => $id], true);
+}

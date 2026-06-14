@@ -172,7 +172,7 @@ $imgSim = function(array $art): string {
             $nomCom     = $com['nom_complet'] ?? 'Inconnu';
             $initCom    = $initiales($nomCom);
             $styleAv    = $avatarStyle($com['type_user']);
-            $isAuteur   = $com['type_user'] === 'auteur';
+            $isAuteurDeLArticle = ($com['type_user'] === 'auteur') && ((int)$com['auteur_id'] === (int)$article['auteur_id']);
             $isMine     = ($currentAuteurId && (int)$com['auteur_id'] === $currentAuteurId)
                         || ($currentLecteurId && (int)$com['lecteur_id'] === $currentLecteurId);
           ?>
@@ -182,10 +182,8 @@ $imgSim = function(array $art): string {
               <div class="dc-item-header">
                 <div>
                   <span class="dc-item-name"><?= htmlspecialchars($nomCom) ?></span>
-                  <?php if ($isAuteur): ?>
-                    <span class="dc-item-badge">Auteur</span>
-                  <?php else: ?>
-                    <span class="dc-item-badge dc-item-badge-lecteur">Lecteur</span>
+                  <?php if ($isAuteurDeLArticle): ?>
+                    <span class="dc-item-badge">Auteur de l'article</span>
                   <?php endif; ?>
                   <span class="dc-item-date"><?= date('d/m/Y à H:i', strtotime($com['date'])) ?></span>
                 </div>
@@ -428,3 +426,11 @@ $imgSim = function(array $art): string {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<?php if (isset($_GET['signal']) && $_GET['signal'] === 'ok'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('Signalement envoyé avec succès. Merci !');
+});
+</script>
+<?php endif; ?>

@@ -167,3 +167,4 @@ function adminGetAuteursPourFiltre(): array {
     $sql = "SELECT id, prenom || ' ' || nom AS nom_complet FROM auteur ORDER BY nom";
     return executeSelect($sql);
 }
+

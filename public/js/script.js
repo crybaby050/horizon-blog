@@ -838,3 +838,115 @@ window.admCloseDeleteLecteur = function () {
     document.head.appendChild(s);
   }
 })();
+
+
+/* ════════════════════════════════════════════════════
+   CORBEILLE — Modals confirmation (auteur & admin)
+   ════════════════════════════════════════════════════ */
+
+/* ── Auteur ── */
+window.openCorbeilleModal = function (action, id, titre) {
+    const overlay   = document.getElementById('corbeilleModal');
+    const iconWrap  = document.getElementById('corbeilleModalIconWrap');
+    const icon      = document.getElementById('corbeilleModalIcon');
+    const titleEl   = document.getElementById('corbeilleModalTitle');
+    const subEl     = document.getElementById('corbeilleModalSub');
+    const actionEl  = document.getElementById('corbeilleModalAction');
+    const idEl      = document.getElementById('corbeilleModalId');
+    const confirmEl = document.getElementById('corbeilleModalConfirm');
+    if (!overlay) return;
+
+    actionEl.value = action;
+    idEl.value     = id;
+
+    if (action === 'restaurer') {
+        iconWrap.style.background = '#e6f7ee';
+        icon.setAttribute('stroke', '#1a9e5c');
+        icon.innerHTML = '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>';
+        titleEl.textContent = "Restaurer l'article ?";
+        subEl.innerHTML = 'Vous allez restaurer <strong>' + titre + '</strong>. Il repassera en attente de validation.';
+        confirmEl.textContent = 'Restaurer';
+        confirmEl.style.background = '#1a9e5c';
+        confirmEl.style.boxShadow = '0 4px 14px rgba(26,158,92,.3)';
+    } else {
+        iconWrap.style.background = '#fef2f2';
+        icon.setAttribute('stroke', '#dc2626');
+        icon.innerHTML = '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>';
+        titleEl.textContent = 'Supprimer définitivement ?';
+        subEl.innerHTML = 'Vous allez supprimer <strong>' + titre + '</strong> de façon irréversible. Cette action ne peut pas être annulée.';
+        confirmEl.textContent = 'Supprimer';
+        confirmEl.style.background = '#dc2626';
+        confirmEl.style.boxShadow = '0 4px 14px rgba(220,38,38,.3)';
+    }
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeCorbeilleModal = function () {
+    const overlay = document.getElementById('corbeilleModal');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+/* ── Admin ── */
+window.openCorbeilleModalAdm = function (action, id, titre) {
+    const overlay   = document.getElementById('corbeilleModalAdm');
+    const iconWrap  = document.getElementById('corbeilleModalAdmIconWrap');
+    const icon      = document.getElementById('corbeilleModalAdmIcon');
+    const titleEl   = document.getElementById('corbeilleModalAdmTitle');
+    const subEl     = document.getElementById('corbeilleModalAdmSub');
+    const actionEl  = document.getElementById('corbeilleModalAdmAction');
+    const idEl      = document.getElementById('corbeilleModalAdmId');
+    const confirmEl = document.getElementById('corbeilleModalAdmConfirm');
+    if (!overlay) return;
+
+    actionEl.value = action;
+    idEl.value     = id;
+
+    if (action === 'restaurer') {
+        iconWrap.style.background = '#e6f7ee';
+        icon.setAttribute('stroke', '#1a9e5c');
+        icon.innerHTML = '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>';
+        titleEl.textContent = "Restaurer l'article ?";
+        subEl.innerHTML = 'Vous allez restaurer <strong>' + titre + '</strong>. Il repassera en attente de validation.';
+        confirmEl.textContent = 'Restaurer';
+        confirmEl.style.background = '#1a9e5c';
+        confirmEl.style.boxShadow = '0 4px 14px rgba(26,158,92,.3)';
+    } else {
+        iconWrap.style.background = '#fef2f2';
+        icon.setAttribute('stroke', '#dc2626');
+        icon.innerHTML = '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>';
+        titleEl.textContent = 'Supprimer définitivement ?';
+        subEl.innerHTML = 'Vous allez supprimer <strong>' + titre + '</strong> de façon irréversible. Cette action ne peut pas être annulée.';
+        confirmEl.textContent = 'Supprimer';
+        confirmEl.style.background = '#dc2626';
+        confirmEl.style.boxShadow = '0 4px 14px rgba(220,38,38,.3)';
+    }
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeCorbeilleModalAdm = function () {
+    const overlay = document.getElementById('corbeilleModalAdm');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+/* ── Fermer au clic en dehors ── */
+document.addEventListener('DOMContentLoaded', function () {
+    const corbeilleModal = document.getElementById('corbeilleModal');
+    if (corbeilleModal) {
+        corbeilleModal.addEventListener('click', e => {
+            if (e.target === corbeilleModal) window.closeCorbeilleModal();
+        });
+    }
+
+    const corbeilleModalAdm = document.getElementById('corbeilleModalAdm');
+    if (corbeilleModalAdm) {
+        corbeilleModalAdm.addEventListener('click', e => {
+            if (e.target === corbeilleModalAdm) window.closeCorbeilleModalAdm();
+        });
+    }
+});

@@ -50,7 +50,7 @@ function getChartVuesParMois(int $auteurId): array {
  * Compte les articles de l'auteur avec filtres optionnels.
  */
 function countArticlesAuteur(int $auteurId, string $statut = '', string $search = ''): int {
-    $where  = ["a.auteur_id = :id"];
+    $where  = ["a.auteur_id = :id", "a.statut != 'Inactif'"];
     $params = [':id' => $auteurId];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
@@ -62,7 +62,7 @@ function countArticlesAuteur(int $auteurId, string $statut = '', string $search 
  * Liste paginée des articles de l'auteur.
  */
 function getArticlesAuteur(int $auteurId, string $statut = '', string $search = '', int $page = 1, int $perPage = 9): array {
-    $where  = ["a.auteur_id = :id"];
+    $where  = ["a.auteur_id = :id", "a.statut != 'Inactif'"];
     $params = [':id' => $auteurId];
     if ($statut !== '') { $where[] = "a.statut = :statut"; $params[':statut'] = $statut; }
     if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
@@ -89,7 +89,7 @@ function getArticleAuteur(int $articleId, int $auteurId): array|false {
         FROM article a
         JOIN auteur au ON au.id = a.auteur_id
         LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
-        WHERE a.id = :id AND a.auteur_id = :auteur_id";
+        WHERE a.id = :id AND a.auteur_id = :auteur_id AND a.statut != 'Inactif'";
     $res = executeSelect($sql, [':id'=>$articleId, ':auteur_id'=>$auteurId], true);
     return $res ?: false;
 }
@@ -278,4 +278,70 @@ function signalerCommentaire(int $commentaireId, int $signaleurId, string $typeS
         ':libelle'      => $raison,
         ':description'  => $description,
     ]);
+}
+
+/**
+ * Soft delete : passe l'article en statut "Inactif".
+ */
+function softDeleteArticleAuteur(int $articleId, int $auteurId): void {
+    executeUpdate(
+        "UPDATE article SET statut = 'Inactif', date_dernier_modification = NOW()
+         WHERE id = :id AND auteur_id = :auteur_id",
+        [':id' => $articleId, ':auteur_id' => $auteurId]
+    );
+}
+
+/**
+ * Restaure un article depuis la corbeille (remet "En attente").
+ */
+function restaurerArticleAuteur(int $articleId, int $auteurId): void {
+    executeUpdate(
+        "UPDATE article SET statut = 'En attente', date_dernier_modification = NOW()
+         WHERE id = :id AND auteur_id = :auteur_id AND statut = 'Inactif'",
+        [':id' => $articleId, ':auteur_id' => $auteurId]
+    );
+}
+
+/**
+ * Suppression définitive (depuis la corbeille uniquement).
+ */
+function deleteArticleDefinitivement(int $articleId, int $auteurId): void {
+    executeUpdate("DELETE FROM article_image WHERE article_id = :id",     [':id' => $articleId]);
+    executeUpdate("DELETE FROM article_categorie WHERE article_id = :id", [':id' => $articleId]);
+    executeUpdate("DELETE FROM commentaire WHERE article_id = :id",       [':id' => $articleId]);
+    executeUpdate("DELETE FROM signalement WHERE article_id = :id",       [':id' => $articleId]);
+    executeUpdate(
+        "DELETE FROM article WHERE id = :id AND auteur_id = :auteur_id AND statut = 'Inactif'",
+        [':id' => $articleId, ':auteur_id' => $auteurId]
+    );
+}
+
+/**
+ * Compte les articles dans la corbeille.
+ */
+function countArticlesCorbeille(int $auteurId, string $search = ''): int {
+    $where  = ["auteur_id = :id", "statut = 'Inactif'"];
+    $params = [':id' => $auteurId];
+    if ($search !== '') { $where[] = "libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
+    $sql = "SELECT COUNT(*) AS total FROM article WHERE " . implode(' AND ', $where);
+    return (int)(executeSelect($sql, $params, true)['total'] ?? 0);
+}
+
+/**
+ * Liste paginée des articles dans la corbeille.
+ */
+function getArticlesCorbeille(int $auteurId, string $search = '', int $page = 1, int $perPage = 9): array {
+    $where  = ["a.auteur_id = :id", "a.statut = 'Inactif'"];
+    $params = [':id' => $auteurId];
+    if ($search !== '') { $where[] = "a.libelle ILIKE :search"; $params[':search'] = '%'.$search.'%'; }
+    $params[':limit']  = $perPage;
+    $params[':offset'] = ($page - 1) * $perPage;
+    $sql = "SELECT a.id, a.libelle, a.description, a.statut, a.date_creation, a.date_dernier_modification,
+                   ai.url AS image_p
+            FROM article a
+            LEFT JOIN article_image ai ON ai.article_id = a.id AND ai.ordre = 1
+            WHERE " . implode(' AND ', $where) . "
+            ORDER BY a.date_dernier_modification DESC
+            LIMIT :limit OFFSET :offset";
+    return executeSelect($sql, $params);
 }

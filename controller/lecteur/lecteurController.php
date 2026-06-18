@@ -2,7 +2,10 @@
 require_once ROOT . "/model/lecteur/lecteurModel.php";
 
 /* ── HOME ── */
-$home = function () use ($currentLecteurId, $currentAuteurId) {
+$home = function () {
+    $currentLecteurId = ($_SESSION['user']['type'] ?? '') === 'lecteur' ? (int)$_SESSION['user']['id'] : null;
+    $currentAuteurId  = ($_SESSION['user']['type'] ?? '') === 'auteur'  ? (int)$_SESSION['user']['id'] : null;
+
     $articles = getArticleVisuel();
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $postAction = $_POST['post_action'] ?? '';

@@ -174,9 +174,14 @@ function updateStatutAuteur(int $id, string $statut): void {
 }
 
 function deleteAuteurAdmin(int $id): void {
+    // Supprime les commentaires écrits par cet auteur (sur ses articles ou ceux d'autres)
+    executeUpdate("DELETE FROM signalement WHERE auteur_id = :id", [':id'=>$id]);
+    executeUpdate("DELETE FROM commentaire WHERE auteur_id = :id", [':id'=>$id]);
+
     // Récupère ses articles pour les supprimer en cascade
     $articles = executeSelect("SELECT id FROM article WHERE auteur_id = :id", [':id'=>$id]);
     foreach ($articles as $art) deleteArticleAdmin($art['id']);
+
     executeUpdate("DELETE FROM auteur WHERE id = :id", [':id'=>$id]);
 }
 
@@ -372,49 +377,59 @@ function countAllDemandesAuteur(string $statut = ''): int {
  * Accepte une demande : transforme le lecteur en auteur.
  */
 function accepterDemandeAuteur(int $demandeId, int $lecteurId): void {
-    // Récupère les infos du lecteur
     $lecteur = executeSelect("SELECT * FROM lecteur WHERE id = :id", [':id' => $lecteurId], true);
     if (!$lecteur) return;
 
-    // Insère dans auteur
-    $sql = "INSERT INTO auteur (nom, prenom, email, mot_de_passe, date_inscription, statut, admin, bio, photo)
-            VALUES (:nom, :prenom, :email, :mdp, CURRENT_DATE, 'Actif', 1, :bio, :photo)
-            RETURNING id";
-    $res = executeSelect($sql, [
-        ':nom'    => $lecteur['nom'],
-        ':prenom' => $lecteur['prenom'],
-        ':email'  => $lecteur['email'],
-        ':mdp'    => $lecteur['mot_de_passe'],
-        ':bio'    => '', // sera mis à jour ensuite avec le message de la demande
-        ':photo'  => $lecteur['photo'],
-    ], true);
-    $nouvelAuteurId = $res['id'] ?? null;
+    $existant = executeSelect("SELECT id FROM auteur WHERE email = :email", [':email' => $lecteur['email']], true);
+    if ($existant) {
+        $nouvelAuteurId = $existant['id'];
+    } else {
+        $sql = "INSERT INTO auteur (nom, prenom, email, mot_de_passe, date_inscription, statut, admin_id, bio, photo)
+                VALUES (:nom, :prenom, :email, :mdp, CURRENT_DATE, 'Actif', :admin_id, :bio, :photo)
+                RETURNING id";
+        $res = executeSelect($sql, [
+            ':nom'      => $lecteur['nom'],
+            ':prenom'   => $lecteur['prenom'],
+            ':email'    => $lecteur['email'],
+            ':mdp'      => $lecteur['mot_de_passe'],
+            ':admin_id' => 1,
+            ':bio'      => '',
+            ':photo'    => $lecteur['photo'],
+        ], true);
+        $nouvelAuteurId = $res['id'] ?? null;
+    }
+
     if (!$nouvelAuteurId) return;
 
-    // Récupère le message de la demande pour pré-remplir la bio
     $demande = executeSelect("SELECT message FROM demande_auteur WHERE id = :id", [':id' => $demandeId], true);
     if ($demande && !empty($demande['message'])) {
         executeUpdate("UPDATE auteur SET bio = :bio WHERE id = :id",
             [':bio' => $demande['message'], ':id' => $nouvelAuteurId]);
     }
 
-    // Migration des commentaires
     executeUpdate(
         "UPDATE commentaire SET auteur_id = :auteur_id, lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
         [':auteur_id' => $nouvelAuteurId, ':lecteur_id' => $lecteurId]
     );
 
-    // Migration des signalements
     executeUpdate(
         "UPDATE signalement SET auteur_id = :auteur_id, lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
         [':auteur_id' => $nouvelAuteurId, ':lecteur_id' => $lecteurId]
     );
 
-    // Supprime le lecteur
-    executeUpdate("DELETE FROM lecteur WHERE id = :id", [':id' => $lecteurId]);
+    // Marquer la demande comme acceptée ET retirer la référence au lecteur AVANT suppression
+    executeUpdate(
+        "UPDATE demande_auteur SET statut = 'Acceptee', lecteur_id = NULL WHERE id = :id",
+        [':id' => $demandeId]
+    );
 
-    // Marque la demande comme acceptée
-    executeUpdate("UPDATE demande_auteur SET statut = 'Acceptee' WHERE id = :id", [':id' => $demandeId]);
+    // Si d'autres demandes (refusées) du même lecteur existent, les détacher aussi
+    executeUpdate(
+        "UPDATE demande_auteur SET lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
+        [':lecteur_id' => $lecteurId]
+    );
+
+    executeUpdate("DELETE FROM lecteur WHERE id = :id", [':id' => $lecteurId]);
 }
 
 /**

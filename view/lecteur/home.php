@@ -270,19 +270,87 @@
         </div>
       </div>
       <div class="join-cta-row">
-        <button class="join-cta-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="8.5" cy="7" r="4"/>
-            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
-          </svg>
-          S'inscrire gratuitement
-        </button>
-        <button class="join-cta-secondary">Se Connecter</button>
+        <?php if (!isset($_SESSION['user'])): ?>
+          <a href="<?= path('auth','register') ?>" class="join-cta-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            S'inscrire gratuitement
+          </a>
+          <a href="<?= path('auth','login') ?>" class="join-cta-secondary">Se Connecter</a>
+        
+        <?php elseif ($_SESSION['user']['type'] === 'lecteur'): ?>
+          <?php if (!empty($demandeEnCours)): ?>
+            <button class="join-cta-primary" disabled style="opacity:.6;cursor:not-allowed;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+              Demande en cours d'examen
+            </button>
+          <?php else: ?>
+            <button class="join-cta-primary" onclick="openModal('modalDevenirAuteur')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Devenir auteur
+            </button>
+          <?php endif; ?>
+          
+        <?php else: /* auteur connecté */ ?>
+          <a href="<?= path('auteur','dashboard') ?>" class="join-cta-primary">Accéder à mon espace auteur</a>
+        <?php endif; ?>
       </div>
     </div>
   </div>
 </section>
+
+<div class="toast" id="toast"></div>
+
+<?php if (isset($_SESSION['user']) && $_SESSION['user']['type'] === 'lecteur'): ?>
+<!-- Modal devenir auteur -->
+<div class="modal-overlay" id="modalDevenirAuteur" onclick="closeModalOutside(event, 'modalDevenirAuteur')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Devenir auteur</h3>
+      <button class="modal-close" onclick="closeModal('modalDevenirAuteur')">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form method="POST" action="<?= path('lecteur','home') ?>">
+      <input type="hidden" name="controller" value="lecteur"/>
+      <input type="hidden" name="action" value="home"/>
+      <input type="hidden" name="post_action" value="demande_auteur"/>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Parlez-nous de vous : votre parcours, vos centres d'intérêt, et pourquoi vous souhaitez publier sur HorizonBlog.
+        </p>
+        <textarea class="modal-textarea" name="message" rows="5"
+                  placeholder="Présentez-vous en quelques lignes…" required
+                  minlength="20"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-btn-cancel" onclick="closeModal('modalDevenirAuteur')">Annuler</button>
+        <button type="submit" class="modal-btn-confirm">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Envoyer la demande
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<?php endif; ?>
+
+<?php if (($_GET['demande'] ?? '') === 'ok'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('Votre demande a été envoyée avec succès !');
+});
+</script>
+<?php endif; ?>
 
 
 <!-- Données du hero injectées pour script.js -->

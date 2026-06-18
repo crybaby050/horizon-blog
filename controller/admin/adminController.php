@@ -19,6 +19,7 @@ if (!$isLogin) {
 }
 
 $nbSignalementsNonTraites = !$isLogin ? getNbSignalementsNonTraites() : 0;
+$nbDemandesEnAttente = !$isLogin ? getNbDemandesAuteurEnAttente() : 0;
 
 /* ── LOGIN ── */
 $login = function () {
@@ -205,6 +206,42 @@ $lecteurs = function () use ($nbSignalementsNonTraites) {
     ), "admin");
 };
 
+
+/* --DEMANDE POUR DEVENIR AUTEUR--*/
+$demandes = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? 'En attente');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if (!in_array($statut, ['En attente','Acceptee','Refusee',''], true)) $statut = 'En attente';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action']  ?? '';
+        $demandeId  = (int)($_POST['demande_id'] ?? 0);
+        $lecteurId  = (int)($_POST['lecteur_id'] ?? 0);
+
+        if ($postAction === 'accepter' && $demandeId && $lecteurId) {
+            accepterDemandeAuteur($demandeId, $lecteurId);
+        }
+        if ($postAction === 'refuser' && $demandeId) {
+            refuserDemandeAuteur($demandeId);
+        }
+
+        header('Location: '.path('admin','demandes',['statut'=>$statut,'page'=>$page]));
+        exit();
+    }
+
+    $total      = countAllDemandesAuteur($statut);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $demandes   = getAllDemandesAuteur($statut, $page, $perPage);
+    $nbDemandesEnAttente = getNbDemandesAuteurEnAttente();
+
+    loadView("admin/demandes", compact(
+        'demandes','statut','page','totalPages','total','nbSignalementsNonTraites','nbDemandesEnAttente'
+    ), "admin");
+};
+
 /* ── SIGNALEMENTS ── */
 $signalements = function () use ($nbSignalementsNonTraites) {
     $statut  = trim($_GET['statut'] ?? '');
@@ -300,6 +337,7 @@ $actions = [
     'auteurs'        => $auteurs,
     'lecteurs'       => $lecteurs,
     'signalements'   => $signalements,
+    'demandes' => $demandes,
     'corbeille' => $corbeille,
     'deconnexion'    => $deconnexion,
 ];

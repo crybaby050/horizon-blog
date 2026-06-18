@@ -4,6 +4,15 @@
   $leftDesc  = 'Connectez-vous pour accéder à vos articles favoris et interagir avec la communauté HorizonBlog.';
 ?>
 
+<?php if (($_GET['promu'] ?? '') === '1'): ?>
+  <div class="auth-alert auth-alert-info" style="background:#e8f7f0;border-color:#1a9e5c;color:#0f6e40;">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15" stroke="#0f6e40">
+      <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+    </svg>
+    Votre demande pour devenir auteur a été acceptée ! Reconnectez-vous pour accéder à votre nouvel espace.
+  </div>
+<?php endif; ?>
+
 <div class="auth-header">
   <div class="auth-header-icon">
     <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="22" height="22" stroke="#1a9e5c">

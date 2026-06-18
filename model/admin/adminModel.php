@@ -423,12 +423,13 @@ function accepterDemandeAuteur(int $demandeId, int $lecteurId): void {
         [':id' => $demandeId]
     );
 
-    // Si d'autres demandes (refusées) du même lecteur existent, les détacher aussi
+    // Marquer la demande comme acceptée
     executeUpdate(
-        "UPDATE demande_auteur SET lecteur_id = NULL WHERE lecteur_id = :lecteur_id",
-        [':lecteur_id' => $lecteurId]
+        "UPDATE demande_auteur SET statut = 'Acceptee' WHERE id = :id",
+        [':id' => $demandeId]
     );
 
+    // Supprimer le lecteur (ON DELETE SET NULL gère demande_auteur.lecteur_id automatiquement)
     executeUpdate("DELETE FROM lecteur WHERE id = :id", [':id' => $lecteurId]);
 }
 

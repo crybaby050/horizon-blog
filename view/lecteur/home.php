@@ -1,0 +1,373 @@
+<!-- ════════ MOBILE DRAWER ════════ -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <a href="<?= path('lecteur','home') ?>" class="active">Accueil</a>
+  <a href="<?= path('lecteur','article') ?>">Articles</a>
+  <a href="<?= path('lecteur','categorie') ?>">Catégorie</a>
+  <a href="#">Contact</a>
+  <div class="mobile-drawer-auth">
+    <button class="mobile-btn-s">S'inscrire</button>
+    <button class="mobile-btn-c">Se Connecter</button>
+  </div>
+</div>
+
+<!-- ════════ HERO ════════ -->
+<div class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <button class="hero-arrow left" onclick="changeHero(-1)">&#8249;</button>
+  <button class="hero-arrow right" onclick="changeHero(1)">&#8250;</button>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1 id="heroTitle">
+        <?= htmlspecialchars(!empty($articles) ? $articles[0]['libelle'] : 'Bienvenue sur HorizonBlog') ?>
+      </h1>
+      <p id="heroDesc">
+        <?= htmlspecialchars(!empty($articles) ? $articles[0]['description'] : '') ?>
+      </p>
+      <a href="<?= !empty($articles) ? path('lecteur','detail',['id'=>$articles[0]['id']]) : '#' ?>"
+         class="btn-lire-hero" id="btnLireHero">
+        Lire l'article
+        <span class="book-icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+
+    <?php if (!empty($articles)): $first = $articles[0]; ?>
+    <div class="hero-card">
+      <div class="card-arc">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+          <circle cx="80" cy="20" r="55" stroke="#1a9e5c" stroke-width="3.5" fill="none" opacity=".4"/>
+          <circle cx="68" cy="30" r="38" stroke="#1a9e5c" stroke-width="3.5" fill="none" opacity=".65"/>
+        </svg>
+      </div>
+      <img class="avatar-img" src="https://i.pravatar.cc/80?img=5" alt="auteur"/>
+      <div class="meta-label">Auteur</div>
+      <div class="meta-val" id="cardAuteur"><?= htmlspecialchars($first['auteur'] ?? 'Inconnu') ?></div>
+      <div class="meta-label">Date de publication</div>
+      <div class="meta-val" id="cardDate"><?= date('d/m/Y', strtotime($first['date_creation'])) ?></div>
+      <div class="meta-section-title">Catégorie</div>
+      <div class="tags-wrap" id="cardTags">
+        <?php foreach ($first['categories'] as $cat): ?>
+          <span class="ctag"><?= htmlspecialchars($cat['libelle']) ?></span>
+        <?php endforeach; ?>
+      </div>
+      <div class="card-vc">
+        <span class="card-vc-c"></span>
+        <span class="card-vc-c"></span>
+      </div>
+    </div>
+    <?php endif; ?>
+  </div>
+
+  <div class="hero-dots" id="heroDots">
+    <?php foreach ($articles as $index => $article): ?>
+      <button class="hero-dot <?= $index === 0 ? 'active' : '' ?>"
+              onclick="goHero(<?= $index ?>)"></button>
+    <?php endforeach; ?>
+  </div>
+</div>
+
+<!-- ════════ ARTICLES DE LA SEMAINE ════════ -->
+<section class="articles-section">
+  <div class="bg-circ" style="width:220px;height:220px;top:-60px;left:200px;animation:fa 7s ease-in-out infinite;opacity:.85;"></div>
+  <div class="bg-circ" style="width:140px;height:140px;top:10px;right:80px;animation:fb 9s ease-in-out infinite;opacity:.7;"></div>
+  <div class="bg-circ" style="width:170px;height:170px;bottom:-40px;left:80px;animation:fc 8s ease-in-out infinite;opacity:.75;"></div>
+  <div class="bg-circ" style="width:110px;height:110px;bottom:80px;right:240px;animation:fd 6s ease-in-out infinite;opacity:.6;"></div>
+  <div class="bg-circ" style="width:80px;height:80px;top:55%;left:55%;animation:fa 10s ease-in-out infinite reverse;opacity:.5;"></div>
+
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="sec-title fade-up">Articles de la Semaine</div>
+    <div class="sec-sub fade-up">Découvrez les derniers articles ajoutés en cours de semaine</div>
+
+    <div class="slider-outer">
+      <button class="slider-arrow-btn prev" onclick="slideArticles(-1)">&#8249;</button>
+      <button class="slider-arrow-btn next" onclick="slideArticles(1)">&#8250;</button>
+
+      <div class="slider-viewport">
+        <div class="slider-track" id="articleTrack">
+          <?php foreach ($articles as $art): ?>
+          <div class="flip-card">
+            <div class="flip-inner">
+              <div class="flip-front">
+                <?php
+                  $imgHome = !empty($art['image_p'])
+                      ? (str_starts_with($art['image_p'], 'http')
+                          ? htmlspecialchars($art['image_p'])
+                          : WEBROOT . htmlspecialchars($art['image_p']))
+                      : 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=700&q=80';
+                  ?>
+                  <img src="<?= $imgHome ?>"
+                     alt="<?= htmlspecialchars($art['libelle']) ?>"/>
+                <div class="flip-front-overlay">
+                  <h3><?= htmlspecialchars($art['libelle']) ?></h3>
+                  <a href="<?= path('lecteur','detail',['id'=>$art['id']]) ?>" class="btn-read">
+                    Lire l'article
+                    <span class="book-chip">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+              </div>
+              <div class="flip-back">
+                <h3><?= htmlspecialchars($art['libelle']) ?></h3>
+                <p><?= htmlspecialchars($art['description']) ?></p>
+                <a href="<?= path('lecteur','detail',['id'=>$art['id']]) ?>" class="btn-read">
+                  Lire l'article
+                  <span class="book-chip">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <div class="sdots" id="sdots"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:12px;">
+      <a href="<?= path('lecteur','article') ?>" class="btn-see-all">
+        Voir tous les articles
+        <span class="book-chip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CATÉGORIES ════════ -->
+<section class="categ-section">
+  <div class="categ-deco" style="width:90px;height:90px;top:16%;left:-20px;opacity:.9;"></div>
+  <div class="categ-deco" style="width:140px;height:140px;top:38%;left:44%;transform:translateX(-50%);opacity:1;"></div>
+  <div class="categ-deco" style="width:100px;height:100px;bottom:10%;right:-20px;opacity:.9;"></div>
+
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="sec-title fade-up">Catégories</div>
+    <div class="sec-sub fade-up">Une liste de catégories qui donne de la diversité à nos contenus</div>
+
+    <div class="categ-grid fade-up">
+      <?php foreach ($categories as $cat):
+        $couleur = getCouleurCategorie($cat['icone'] ?? '');
+        $icone   = getIconeCategorie($cat['icone'] ?? '', 22);
+        $img     = !empty($cat['image'])
+                    ? htmlspecialchars($cat['image'])
+                    : 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80';
+        $nbArt   = $cat['nb_articles'] ?? 0;
+      ?>
+      <div class="categ-card">
+        <img src="<?= $img ?>" alt="<?= htmlspecialchars($cat['libelle']) ?>"/>
+        <div class="categ-overlay"></div>
+        <div class="categ-badge" style="background:<?= $couleur ?>;">
+          <?= $icone ?>
+          <?= htmlspecialchars($cat['libelle']) ?>
+        </div>
+        <a href="<?= path('lecteur','article',['categorie'=>$cat['id']]) ?>" class="categ-link">
+          <?= $nbArt ?> article<?= $nbArt > 1 ? 's' : '' ?>
+          <span class="book-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+      <?php endforeach; ?>
+    </div>
+
+    <div style="text-align:center;margin-top:36px;">
+      <a href="<?= path('lecteur','categorie') ?>" class="btn-see-all">
+        Voir toutes les catégories
+        <span class="book-chip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ REJOIGNEZ-NOUS ════════ -->
+<section class="join-section">
+  <div class="join-grid">
+    <div class="join-img-panel">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1000&q=90" alt="équipe de blogueurs"/>
+      <div class="join-avatars">
+        <img src="https://i.pravatar.cc/80?img=11" alt="a1"/>
+        <img src="https://i.pravatar.cc/80?img=22" alt="a2"/>
+        <img src="https://i.pravatar.cc/80?img=44" alt="a3"/>
+        <div class="join-avatars-count">+2k</div>
+        <span class="join-avatars-label">Auteurs actifs</span>
+      </div>
+      <div class="join-img-stat">
+        <div class="join-img-stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="join-img-stat-num">18 k+</div>
+          <div class="join-img-stat-label">Articles publiés</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="join-text-panel">
+      <div class="join-pill-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Rejoignez-nous
+      </div>
+      <h2>Devenez auteur et partagez votre passion</h2>
+      <p>Publiez vos articles, touchez des milliers de lecteurs et faites partie d'une communauté passionnée. Votre voix mérite d'être entendue.</p>
+      <div class="join-features">
+        <div class="join-feature-item">
+          <div class="join-feature-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+          </div>
+          <p><strong>Éditeur simple et puissant</strong>Rédigez et formatez vos articles en quelques clics, sans aucune compétence technique.</p>
+        </div>
+        <div class="join-feature-item">
+          <div class="join-feature-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            </svg>
+          </div>
+          <p><strong>Audience déjà constituée</strong>Profitez de nos 95 000 lecteurs mensuels dès votre première publication.</p>
+        </div>
+        <div class="join-feature-item">
+          <div class="join-feature-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <p><strong>Statistiques en temps réel</strong>Suivez vues, lectures et engagement sur chacun de vos articles.</p>
+        </div>
+      </div>
+      <div class="join-cta-row">
+        <?php if (!isset($_SESSION['user'])): ?>
+          <a href="<?= path('auth','register') ?>" class="join-cta-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            S'inscrire gratuitement
+          </a>
+          <a href="<?= path('auth','login') ?>" class="join-cta-secondary">Se Connecter</a>
+        
+        <?php elseif ($_SESSION['user']['type'] === 'lecteur'): ?>
+          <?php if (!empty($demandeEnCours)): ?>
+            <button class="join-cta-primary" disabled style="opacity:.6;cursor:not-allowed;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+              Demande en cours d'examen
+            </button>
+          <?php else: ?>
+            <button class="join-cta-primary" onclick="openModal('modalDevenirAuteur')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Devenir auteur
+            </button>
+          <?php endif; ?>
+          
+        <?php else: /* auteur connecté */ ?>
+          <a href="<?= path('auteur','dashboard') ?>" class="join-cta-primary">Accéder à mon espace auteur</a>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<?php if (isset($_SESSION['user']) && $_SESSION['user']['type'] === 'lecteur'): ?>
+<!-- Modal devenir auteur -->
+<div class="modal-overlay" id="modalDevenirAuteur" onclick="closeModalOutside(event, 'modalDevenirAuteur')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Devenir auteur</h3>
+      <button class="modal-close" onclick="closeModal('modalDevenirAuteur')">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form method="POST" action="<?= path('lecteur','home') ?>">
+      <input type="hidden" name="controller" value="lecteur"/>
+      <input type="hidden" name="action" value="home"/>
+      <input type="hidden" name="post_action" value="demande_auteur"/>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Parlez-nous de vous : votre parcours, vos centres d'intérêt, et pourquoi vous souhaitez publier sur HorizonBlog.
+        </p>
+        <textarea class="modal-textarea" name="message" rows="5"
+                  placeholder="Présentez-vous en quelques lignes…" required
+                  minlength="20"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-btn-cancel" onclick="closeModal('modalDevenirAuteur')">Annuler</button>
+        <button type="submit" class="modal-btn-confirm">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Envoyer la demande
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<?php endif; ?>
+
+<?php if (($_GET['demande'] ?? '') === 'ok'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('Votre demande a été envoyée avec succès !');
+});
+</script>
+<?php endif; ?>
+
+
+<!-- Données du hero injectées pour script.js -->
+<script>
+window.heroSlides = <?= json_encode(array_map(function($article) {
+    return [
+        'id'         => $article['id'],
+        'title'      => $article['libelle'],
+        'desc'       => $article['description'],
+        'bg' => !empty($article['image_p'])
+                  ? (str_starts_with($article['image_p'], 'http')
+                      ? $article['image_p']
+                      : WEBROOT . $article['image_p'])
+                  : 'https://images.unsplash.com/photo-1570481662006-a3a1374699e8?w=1800&q=85',
+        'auteur'     => $article['auteur'] ?? 'Inconnu',
+        'date'       => date('d/m/Y', strtotime($article['date_creation'])),
+        'categories' => array_column($article['categories'], 'libelle')
+    ];
+}, $articles)); ?>;
+</script>

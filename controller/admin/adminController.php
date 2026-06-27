@@ -1,0 +1,354 @@
+<?php
+require_once ROOT . "model/admin/adminModel.php";
+
+//eval(file_get_contents(ROOT . "model/admin/adminModel.php"));
+//var_dump(function_exists('getNbSignalementsNonTraites'));
+//die();
+//$_SESSION['admin'] = ['prenom' => 'Moussa', 'nom' => 'Diallo', 'email' => 'admin@horizonblog.com'];
+
+//var_dump(function_exists('getNbSignalementsNonTraites'));
+//die();
+/* ── Protection accès ── */
+$isLogin = ($_REQUEST['action'] ?? '') === 'login';
+
+if (!$isLogin) {
+    if (empty($_SESSION['admin']['id'])) {
+        header('Location: ' . path('admin', 'login'));
+        exit();
+    }
+}
+
+$nbSignalementsNonTraites = !$isLogin ? getNbSignalementsNonTraites() : 0;
+$nbDemandesEnAttente = !$isLogin ? getNbDemandesAuteurEnAttente() : 0;
+
+/* ── LOGIN ── */
+$login = function () {
+    if (!empty($_SESSION['admin']['id'])) {
+        header('Location: ' . path('admin', 'dashboard'));
+        exit();
+    }
+
+    $errors = [];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $errors = validate($_POST, [
+            'email'        => ['required', 'email'],
+            'mot_de_passe' => ['required'],
+        ]);
+
+        if (empty($errors)) {
+            $email = trim($_POST['email'] ?? '');
+            $mdp   = trim($_POST['mot_de_passe'] ?? '');
+
+            $admin = loginAdmin($email, $mdp);
+            if ($admin) {
+                $_SESSION['admin'] = [
+                    'id'     => (int)$admin['id'],
+                    'prenom' => $admin['prenom'],
+                    'nom'    => $admin['nom'],
+                    'email'  => $admin['email'],
+                ];
+                header('Location: ' . path('admin', 'dashboard'));
+                exit();
+            } else {
+                $errors['global'] = 'Email ou mot de passe incorrect.';
+            }
+        }
+    }
+
+    extract(compact('errors'));
+    require_once ROOT . "view/admin/login.php";
+};
+
+/* ── DASHBOARD ── */
+$dashboard = function () use ($nbSignalementsNonTraites) {
+    $stats          = getStatsGlobales();
+    $chartData      = getChartArticlesParMois();
+    $derniersArts   = getDerniersArticles(6);
+    $derniersSignal = getSignalementsRecents(5);
+    loadView("admin/dashboard", compact(
+        'stats', 'chartData', 'derniersArts', 'derniersSignal', 'nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── ARTICLES ── */
+$articles = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? '');
+    $search  = trim($_GET['q']     ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    $statutsValides = ['Actif','En attente','Invalide','Valide'];
+    if (!in_array($statut, $statutsValides, true)) $statut = '';
+
+    // Actions POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $artId      = (int)($_POST['article_id'] ?? 0);
+
+        if ($postAction === 'valider'   && $artId) updateStatutArticle($artId, 'Actif');
+        if ($postAction === 'invalider' && $artId) updateStatutArticle($artId, 'Invalide');
+        if ($postAction === 'supprimer' && $artId) adminSoftDeleteArticle($artId);
+
+        header('Location: ' . path('admin','articles',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        exit();
+    }
+
+    $total      = countAllArticles($statut, $search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $articles   = getAllArticles($statut, $search, $page, $perPage);
+
+    loadView("admin/article", compact(
+        'articles','statut','search','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── DETAIL ARTICLE ── */
+$article_detail = function () use ($nbSignalementsNonTraites) {
+    $id = (int)($_GET['id'] ?? 0);
+    if (!$id) { header('Location: '.path('admin','articles')); exit(); }
+
+    $article = getArticleAdmin($id);
+    if (!$article) { header('Location: '.path('admin','articles')); exit(); }
+
+    // Actions POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+
+        if ($postAction === 'valider')   updateStatutArticle($id, 'Actif');
+        if ($postAction === 'invalider') updateStatutArticle($id, 'Invalide');
+        if ($postAction === 'supprimer_article') {
+            adminSoftDeleteArticle($id);
+            header('Location: '.path('admin','articles').'&deleted=1');
+            exit();
+        }
+        if ($postAction === 'supprimer_commentaire') {
+            $comId = (int)($_POST['comment_id'] ?? 0);
+            if ($comId) deleteCommentaireAdmin($comId);
+        }
+
+        header('Location: '.path('admin','article_detail',['id'=>$id]));
+        exit();
+    }
+
+    $commentaires = getCommentairesArticleAdmin($id);
+    $categories   = getCategoriesArticleAdmin($id);
+    $nbCommentaires = count($commentaires);
+
+    // Re-fetch article après éventuelle mise à jour statut
+    $article = getArticleAdmin($id);
+
+    loadView("admin/detail", compact(
+        'article','commentaires','categories','nbCommentaires','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── AUTEURS ── */
+$auteurs = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? '');
+    $search  = trim($_GET['q']     ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if (!in_array($statut, ['Actif','Inactif'], true)) $statut = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $auteurId   = (int)($_POST['auteur_id'] ?? 0);
+
+        if ($postAction === 'activer'   && $auteurId) updateStatutAuteur($auteurId, 'Actif');
+        if ($postAction === 'desactiver'&& $auteurId) updateStatutAuteur($auteurId, 'Inactif');
+        if ($postAction === 'supprimer' && $auteurId) deleteAuteurAdmin($auteurId);
+
+        header('Location: '.path('admin','auteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        exit();
+    }
+
+    $total      = countAllAuteurs($statut, $search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $auteurs    = getAllAuteurs($statut, $search, $page, $perPage);
+
+    loadView("admin/auteur", compact(
+        'auteurs','statut','search','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── LECTEURS ── */
+$lecteurs = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? '');
+    $search  = trim($_GET['q']     ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if (!in_array($statut, ['Actif','Inactif'], true)) $statut = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $lecteurId  = (int)($_POST['lecteur_id'] ?? 0);
+
+        if ($postAction === 'activer'   && $lecteurId) updateStatutLecteur($lecteurId, 'Actif');
+        if ($postAction === 'desactiver'&& $lecteurId) updateStatutLecteur($lecteurId, 'Inactif');
+        if ($postAction === 'supprimer' && $lecteurId) deleteLecteurAdmin($lecteurId);
+
+        header('Location: '.path('admin','lecteurs',['statut'=>$statut,'q'=>$search,'page'=>$page]));
+        exit();
+    }
+
+    $total      = countAllLecteurs($statut, $search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $lecteurs   = getAllLecteurs($statut, $search, $page, $perPage);
+
+    loadView("admin/lecteur", compact(
+        'lecteurs','statut','search','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+
+/* --DEMANDE POUR DEVENIR AUTEUR--*/
+$demandes = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? 'En attente');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if (!in_array($statut, ['En attente','Acceptee','Refusee',''], true)) $statut = 'En attente';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action']  ?? '';
+        $demandeId  = (int)($_POST['demande_id'] ?? 0);
+        $lecteurId  = (int)($_POST['lecteur_id'] ?? 0);
+
+        if ($postAction === 'accepter' && $demandeId && $lecteurId) {
+            accepterDemandeAuteur($demandeId, $lecteurId);
+        }
+        if ($postAction === 'refuser' && $demandeId) {
+            refuserDemandeAuteur($demandeId);
+        }
+
+        header('Location: '.path('admin','demandes',['statut'=>$statut,'page'=>$page]));
+        exit();
+    }
+
+    $total      = countAllDemandesAuteur($statut);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $demandes   = getAllDemandesAuteur($statut, $page, $perPage);
+    $nbDemandesEnAttente = getNbDemandesAuteurEnAttente();
+
+    loadView("admin/demandes", compact(
+        'demandes','statut','page','totalPages','total','nbSignalementsNonTraites','nbDemandesEnAttente'
+    ), "admin");
+};
+
+/* ── SIGNALEMENTS ── */
+$signalements = function () use ($nbSignalementsNonTraites) {
+    $statut  = trim($_GET['statut'] ?? '');
+    $search  = trim($_GET['q']     ?? '');
+    $type    = trim($_GET['type']  ?? ''); // 'article' | 'commentaire' | ''
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if (!in_array($statut, ['Non traiter','Traiter'], true)) $statut = '';
+    if (!in_array($type, ['article','commentaire'], true))   $type   = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction    = $_POST['post_action']     ?? '';
+        $signalementId = (int)($_POST['signalement_id'] ?? 0);
+        $articleId     = (int)($_POST['article_id']     ?? 0);
+        $commentaireId = (int)($_POST['commentaire_id'] ?? 0);
+
+        // Juste marquer traité sans action sur le contenu
+        if ($postAction === 'traiter' && $signalementId) {
+            updateStatutSignalement($signalementId, 'Traiter');
+        }
+
+        // Invalider l'article + traiter le signalement
+        if ($postAction === 'invalider_article' && $signalementId && $articleId) {
+            invaliderArticleEtTraiter($signalementId, $articleId);
+        }
+
+        // Supprimer le commentaire + traiter le signalement
+        if ($postAction === 'supprimer_commentaire' && $signalementId && $commentaireId) {
+            supprimerCommentaireEtTraiter($signalementId, $commentaireId);
+        }
+
+        // Ignorer = supprimer le signalement
+        if ($postAction === 'ignorer' && $signalementId) {
+            deleteSignalement($signalementId);
+        }
+
+        header('Location: '.path('admin','signalements',['statut'=>$statut,'q'=>$search,'type'=>$type,'page'=>$page]));
+        exit();
+    }
+
+    $total        = countAllSignalements($statut, $search, $type);
+    $totalPages   = (int)ceil($total / $perPage);
+    $page         = min($page, max(1, $totalPages));
+    $signalements = getAllSignalements($statut, $search, $page, $perPage, $type);
+    $nbSignalementsNonTraites = getNbSignalementsNonTraites();
+
+    loadView("admin/signalement", compact(
+        'signalements','statut','search','type','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── CORBEILLE ── */
+$corbeille = function () use ($nbSignalementsNonTraites) {
+    $search  = trim($_GET['q'] ?? '');
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $perPage = 10;
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $postAction = $_POST['post_action'] ?? '';
+        $id = (int)($_POST['article_id'] ?? 0);
+
+        if ($postAction === 'restaurer'    && $id) adminRestaurerArticle($id);
+        if ($postAction === 'supprimer_def' && $id) deleteArticleAdmin($id);
+
+        header('Location: '.path('admin','corbeille',['q'=>$search,'page'=>$page]));
+        exit();
+    }
+
+    $total      = adminCountCorbeille($search);
+    $totalPages = (int)ceil($total / $perPage);
+    $page       = min($page, max(1, $totalPages));
+    $articles   = adminGetCorbeille($search, $page, $perPage);
+
+    loadView("admin/corbeille", compact(
+        'articles','search','page','totalPages','total','nbSignalementsNonTraites'
+    ), "admin");
+};
+
+/* ── DÉCONNEXION ── */
+$deconnexion = function () {
+    unset($_SESSION['admin']);
+    header('Location: ' . path('admin', 'login'));
+    exit();
+};
+
+/* ── DISPATCH ── */
+$actions = [
+    'login'          => $login,
+    'dashboard'      => $dashboard,
+    'articles'       => $articles,
+    'article_detail' => $article_detail,
+    'auteurs'        => $auteurs,
+    'lecteurs'       => $lecteurs,
+    'signalements'   => $signalements,
+    'demandes' => $demandes,
+    'corbeille' => $corbeille,
+    'deconnexion'    => $deconnexion,
+];
+
+$action = $_REQUEST['action'] ?? 'dashboard';
+$GLOBALS['currentAction'] = $action;
+
+if (array_key_exists($action, $actions)) {
+    $actions[$action]();
+} else {
+    http_response_code(404);
+    echo "Page introuvable";
+    exit();
+}

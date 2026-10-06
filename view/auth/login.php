@@ -40,27 +40,6 @@
   <input type="hidden" name="controller" value="auth"/>
   <input type="hidden" name="action"     value="login"/>
 
-  <!-- Type de compte -->
-  <div class="auth-type-tabs">
-    <label class="auth-type-tab active" id="tab-lecteur">
-      <input type="radio" name="user_type" value="lecteur" checked
-             onchange="switchTab('lecteur')"/>
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-      </svg>
-      Lecteur
-    </label>
-    <label class="auth-type-tab" id="tab-auteur">
-      <input type="radio" name="user_type" value="auteur"
-             onchange="switchTab('auteur')"/>
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" width="15" height="15">
-        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-      </svg>
-      Auteur
-    </label>
-  </div>
-
   <!-- Email -->
   <div class="auth-field <?= !empty($errors['email']) ? 'auth-field-err' : '' ?>">
     <label for="email">Adresse e-mail</label>
@@ -122,10 +101,3 @@
     Retour au blog
   </a>
 </div>
-
-<script>
-function switchTab(type) {
-    document.getElementById('tab-lecteur').classList.toggle('active', type === 'lecteur');
-    document.getElementById('tab-auteur').classList.toggle('active', type === 'auteur');
-}
-</script>

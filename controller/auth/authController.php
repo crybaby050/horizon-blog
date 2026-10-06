@@ -1,6 +1,6 @@
 <?php
 require_once ROOT . "/model/auth/authModel.php";
-
+require_once ROOT . "/model/admin/adminModel.php";  // ← ajouter cette ligne
 /* ── INSCRIPTION ── */
 $register = function () {
     $errors  = [];
@@ -52,42 +52,53 @@ $login = function () {
         ]);
 
         if (empty($errors)) {
-            $email    = trim($_POST['email']);
-            $mdp      = $_POST['mot_de_passe'];
-            $userType = $_POST['user_type'] ?? 'lecteur';
-            $user     = false;
+            $email = trim($_POST['email']);
+            $mdp   = $_POST['mot_de_passe'];
+            $user  = false;
+            $type  = null;
 
-            if ($userType === 'lecteur') {
-                $user = loginLecteur($email, $mdp);
-                if ($user) {
-                    $_SESSION['user'] = [
-                        'id'     => (int)$user['id'],
-                        'type'   => 'lecteur',
-                        'nom'    => $user['nom'],
-                        'prenom' => $user['prenom'],
-                        'email'  => $user['email'],
-                        'photo'  => $user['photo'] ?? null,
-                    ];
-                }
-            } elseif ($userType === 'auteur') {
-                $user = loginAuteur($email, $mdp);
-                if ($user) {
-                    $_SESSION['user'] = [
-                        'id'     => (int)$user['id'],
-                        'type'   => 'auteur',
-                        'nom'    => $user['nom'],
-                        'prenom' => $user['prenom'],
-                        'email'  => $user['email'],
-                    ];
-                }
-            }
-
-            if ($user) {
-                header("Location: " . path($userType === 'auteur' ? 'auteur' : 'lecteur', $userType === 'auteur' ? 'dashboard' : 'home'));
+            // Détection automatique : admin en premier, puis auteur, puis lecteur
+            $admin = loginAdmin($email, $mdp);
+            if ($admin) {
+                $_SESSION['admin'] = [
+                    'id'     => (int)$admin['id'],
+                    'prenom' => $admin['prenom'],
+                    'nom'    => $admin['nom'],
+                    'email'  => $admin['email'],
+                ];
+                header('Location: ' . path('admin', 'dashboard'));
                 exit();
-            } else {
-                $errors['global'] = "Email ou mot de passe incorrect.";
             }
+
+            $auteur = loginAuteur($email, $mdp);
+            if ($auteur) {
+                $_SESSION['user'] = [
+                    'id'     => (int)$auteur['id'],
+                    'type'   => 'auteur',
+                    'nom'    => $auteur['nom'],
+                    'prenom' => $auteur['prenom'],
+                    'email'  => $auteur['email'],
+                    'photo'  => $auteur['photo'] ?? null,
+                ];
+                header('Location: ' . path('auteur', 'dashboard'));
+                exit();
+            }
+
+            $lecteur = loginLecteur($email, $mdp);
+            if ($lecteur) {
+                $_SESSION['user'] = [
+                    'id'     => (int)$lecteur['id'],
+                    'type'   => 'lecteur',
+                    'nom'    => $lecteur['nom'],
+                    'prenom' => $lecteur['prenom'],
+                    'email'  => $lecteur['email'],
+                    'photo'  => $lecteur['photo'] ?? null,
+                ];
+                header('Location: ' . path('lecteur', 'home'));
+                exit();
+            }
+
+            $errors['global'] = 'Email ou mot de passe incorrect.';
         }
     }
 

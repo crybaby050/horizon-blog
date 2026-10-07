@@ -1499,3 +1499,29 @@ footer a:hover { color: var(--green); }
   .filter-search { display: flex !important; margin-left: 0; width: 100%; }
   .filter-search input { width: 100%; }
 }
+
+
+/* ════ FIX SCROLL PAGE REGISTER ════ */
+.auth-wrap {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.auth-left {
+    overflow: hidden;
+    height: 100vh;
+}
+
+.auth-right {
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-right.auth-right-register {
+    align-items: flex-start;
+    padding-top: 40px;
+    padding-bottom: 40px;
+}

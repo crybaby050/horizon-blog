@@ -71,7 +71,7 @@
   </div>
 
   <!-- ── Panneau droit formulaire ── -->
-  <div class="auth-right">
+  <div class="auth-right <?= ($pageTitle === 'Inscription') ? 'auth-right-register' : '' ?>">
     <div class="auth-form-wrap">
       <?= $content ?>
     </div>
